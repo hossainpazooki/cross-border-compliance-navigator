@@ -151,6 +151,7 @@ export function AnchoredText({
  * Helper to inject citation markers into text based on keyword matching
  * Useful when the backend doesn't provide pre-annotated text
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function injectCitationMarkers(text: string, citations: Citation[]): string {
   let annotatedText = text;
 

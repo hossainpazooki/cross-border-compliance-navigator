@@ -3,37 +3,57 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "workspaces": [
+    "packages/*",
+    "tools/*"
+  ],
   "scripts": {
     "dev": "vite",
+    "dev:all": "concurrently -n web,mock-ws -c blue,magenta \"npm:dev\" \"npm:mock-ws\"",
+    "mock-ws": "npm --workspace @platform/mock-ws run start",
+    "build-fixtures": "npm --workspace @platform/mock-ws exec tsx src/build-fixtures.ts",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit && npm --workspace @platform/contracts run typecheck && npm --workspace @platform/mock-ws run typecheck"
   },
   "dependencies": {
+    "@platform/contracts": "*",
+    "@tanstack/react-query": "^5.20.0",
+    "@tanstack/react-virtual": "^3.13.24",
+    "axios": "^1.6.7",
+    "clsx": "^2.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.0",
-    "@tanstack/react-query": "^5.20.0",
-    "axios": "^1.6.7",
-    "zustand": "^4.5.0",
-    "clsx": "^2.1.0",
+    "react-use-websocket": "^4.13.0",
     "tailwind-merge": "^2.2.1",
-    "zod": "^3.22.0"
+    "zod": "^3.22.0",
+    "zustand": "^4.5.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",
     "@typescript-eslint/eslint-plugin": "^7.0.2",
     "@typescript-eslint/parser": "^7.0.2",
     "@vitejs/plugin-react": "^4.2.1",
+    "@vitest/coverage-v8": "^4.1.6",
     "autoprefixer": "^10.4.17",
+    "concurrently": "^9.2.1",
     "eslint": "^8.56.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
+    "jsdom": "^29.1.1",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.3.3",
-    "vite": "^5.1.3"
+    "vite": "^5.1.3",
+    "vitest": "^4.1.6"
   }
 }

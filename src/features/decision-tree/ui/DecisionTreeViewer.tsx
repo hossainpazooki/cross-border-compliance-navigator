@@ -86,9 +86,13 @@ export function DecisionTreeViewer({
   const [internalCollapsedGroups, setInternalCollapsedGroups] = useState<Set<string>>(new Set());
 
   // Use external or internal state
-  const transform = externalPan && externalZoom !== undefined
-    ? { x: externalPan.x, y: externalPan.y, scale: externalZoom }
-    : internalTransform;
+  const transform = useMemo(
+    () =>
+      externalPan && externalZoom !== undefined
+        ? { x: externalPan.x, y: externalPan.y, scale: externalZoom }
+        : internalTransform,
+    [externalPan, externalZoom, internalTransform],
+  );
 
   const setTransform = useCallback((updater: Transform | ((prev: Transform) => Transform)) => {
     if (externalPan && externalZoom !== undefined) {
@@ -235,7 +239,7 @@ export function DecisionTreeViewer({
         y: e.clientY - dragStart.y,
       }));
     }
-  }, [isDragging, dragStart]);
+  }, [isDragging, dragStart, setTransform]);
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
@@ -249,7 +253,7 @@ export function DecisionTreeViewer({
       ...prev,
       scale: Math.min(Math.max(prev.scale * delta, 0.25), 2),
     }));
-  }, []);
+  }, [setTransform]);
 
   // Reset view to centered tree at 65%
   const handleReset = useCallback(() => {
@@ -271,11 +275,11 @@ export function DecisionTreeViewer({
   // Zoom controls
   const handleZoomIn = useCallback(() => {
     setTransform(prev => ({ ...prev, scale: Math.min(prev.scale * 1.2, 2) }));
-  }, []);
+  }, [setTransform]);
 
   const handleZoomOut = useCallback(() => {
     setTransform(prev => ({ ...prev, scale: Math.max(prev.scale * 0.8, 0.25) }));
-  }, []);
+  }, [setTransform]);
 
   return (
     <Card variant="bordered" className={className}>

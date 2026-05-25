@@ -65,6 +65,7 @@ export interface CanvasContextValue {
 }
 
 // Create context with undefined default (must be used within provider)
+// eslint-disable-next-line react-refresh/only-export-components
 export const CanvasContext = createContext<CanvasContextValue | undefined>(undefined);
 
 // Provider props
