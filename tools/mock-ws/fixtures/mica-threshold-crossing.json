@@ -1,0 +1,670 @@
+[
+  {
+    "delay_ms": 500,
+    "envelope": {
+      "seq": 1,
+      "ts": "2026-05-15T10:00:00.500Z",
+      "type": "tick",
+      "payload": {
+        "intent_id": "fixture-intent",
+        "ts": "2026-05-15T10:00:00.500Z",
+        "mark_price": "3510.00",
+        "bid": "3509.50",
+        "ask": "3510.50",
+        "size": "270.655271",
+        "spread_bps": 2.85,
+        "slippage_bps": 4.5,
+        "vol_30d": 0.65,
+        "var_95_usd": 53168.74777681067,
+        "funding_rate": 0.0001
+      }
+    }
+  },
+  {
+    "delay_ms": 500,
+    "envelope": {
+      "seq": 2,
+      "ts": "2026-05-15T10:00:01.000Z",
+      "type": "tick",
+      "payload": {
+        "intent_id": "fixture-intent",
+        "ts": "2026-05-15T10:00:01.000Z",
+        "mark_price": "3520.00",
+        "bid": "3519.50",
+        "ask": "3520.50",
+        "size": "276.988636",
+        "spread_bps": 2.85,
+        "slippage_bps": 4.5,
+        "vol_30d": 0.65,
+        "var_95_usd": 54567.92534988463,
+        "funding_rate": 0.0001
+      }
+    }
+  },
+  {
+    "delay_ms": 500,
+    "envelope": {
+      "seq": 3,
+      "ts": "2026-05-15T10:00:01.500Z",
+      "type": "tick",
+      "payload": {
+        "intent_id": "fixture-intent",
+        "ts": "2026-05-15T10:00:01.500Z",
+        "mark_price": "3530.00",
+        "bid": "3529.50",
+        "ask": "3530.50",
+        "size": "283.286119",
+        "spread_bps": 2.85,
+        "slippage_bps": 4.5,
+        "vol_30d": 0.65,
+        "var_95_usd": 55967.1029229586,
+        "funding_rate": 0.0001
+      }
+    }
+  },
+  {
+    "delay_ms": 500,
+    "envelope": {
+      "seq": 4,
+      "ts": "2026-05-15T10:00:02.000Z",
+      "type": "compliance",
+      "payload": {
+        "crossing_id": "crossing-mica-1",
+        "prior_verdict": "compliant",
+        "new_verdict": "conditional",
+        "citation": "MiCA Art. 5(1)"
+      }
+    }
+  },
+  {
+    "delay_ms": 50,
+    "envelope": {
+      "seq": 5,
+      "ts": "2026-05-15T10:00:02.050Z",
+      "type": "threshold",
+      "payload": {
+        "crossing_id": "crossing-mica-1",
+        "intent_id": "fixture-intent",
+        "ts": "2026-05-15T10:00:02.050Z",
+        "rule_id": "MICA_ART_5_1",
+        "citation": "MiCA Art. 5(1)",
+        "boundary": "1000000",
+        "direction": "crossed_up",
+        "snapshot": {
+          "intent_id": "fixture-intent",
+          "ts": "2026-05-15T10:00:02.500Z",
+          "mark_price": "3540.00",
+          "bid": "3539.50",
+          "ask": "3540.50",
+          "size": "296.610169",
+          "spread_bps": 2.85,
+          "slippage_bps": 5.2,
+          "vol_30d": 0.68,
+          "var_95_usd": 61477.709979988365,
+          "funding_rate": 0.0001
+        },
+        "prior_verdict": "compliant",
+        "new_verdict": "conditional"
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 6,
+      "ts": "2026-05-15T10:00:02.130Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "Trade "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 7,
+      "ts": "2026-05-15T10:00:02.210Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "notional "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 8,
+      "ts": "2026-05-15T10:00:02.290Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "of "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 9,
+      "ts": "2026-05-15T10:00:02.370Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "€1.05M "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 10,
+      "ts": "2026-05-15T10:00:02.450Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "exceeds "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 11,
+      "ts": "2026-05-15T10:00:02.530Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "MiCA "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 12,
+      "ts": "2026-05-15T10:00:02.610Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "Article "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 13,
+      "ts": "2026-05-15T10:00:02.690Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "5(1) "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 14,
+      "ts": "2026-05-15T10:00:02.770Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "reserve-asset "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 15,
+      "ts": "2026-05-15T10:00:02.850Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "threshold "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 16,
+      "ts": "2026-05-15T10:00:02.930Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "of "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 17,
+      "ts": "2026-05-15T10:00:03.010Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "€1M "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 18,
+      "ts": "2026-05-15T10:00:03.090Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "for "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 19,
+      "ts": "2026-05-15T10:00:03.170Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "stablecoin "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 20,
+      "ts": "2026-05-15T10:00:03.250Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "offerings "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 21,
+      "ts": "2026-05-15T10:00:03.330Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "to "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 22,
+      "ts": "2026-05-15T10:00:03.410Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "the "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 23,
+      "ts": "2026-05-15T10:00:03.490Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "public "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 24,
+      "ts": "2026-05-15T10:00:03.570Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "in "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 25,
+      "ts": "2026-05-15T10:00:03.650Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "the "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 26,
+      "ts": "2026-05-15T10:00:03.730Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "European "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 27,
+      "ts": "2026-05-15T10:00:03.810Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "Union. "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 28,
+      "ts": "2026-05-15T10:00:03.890Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "The "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 29,
+      "ts": "2026-05-15T10:00:03.970Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "issuer "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 30,
+      "ts": "2026-05-15T10:00:04.050Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "must "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 31,
+      "ts": "2026-05-15T10:00:04.130Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "publish "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 32,
+      "ts": "2026-05-15T10:00:04.210Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "a "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 33,
+      "ts": "2026-05-15T10:00:04.290Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "crypto-asset "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 34,
+      "ts": "2026-05-15T10:00:04.370Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "white "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 35,
+      "ts": "2026-05-15T10:00:04.450Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "paper "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 36,
+      "ts": "2026-05-15T10:00:04.530Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "and "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 37,
+      "ts": "2026-05-15T10:00:04.610Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "notify "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 38,
+      "ts": "2026-05-15T10:00:04.690Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "the "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 39,
+      "ts": "2026-05-15T10:00:04.770Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "competent "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 40,
+      "ts": "2026-05-15T10:00:04.850Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "authority "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 41,
+      "ts": "2026-05-15T10:00:04.930Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "before "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 42,
+      "ts": "2026-05-15T10:00:05.010Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "any "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 43,
+      "ts": "2026-05-15T10:00:05.090Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "further "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 44,
+      "ts": "2026-05-15T10:00:05.170Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "offering "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 45,
+      "ts": "2026-05-15T10:00:05.250Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "above "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 46,
+      "ts": "2026-05-15T10:00:05.330Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "this "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 47,
+      "ts": "2026-05-15T10:00:05.410Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "size."
+      }
+    }
+  },
+  {
+    "delay_ms": 300,
+    "envelope": {
+      "seq": 48,
+      "ts": "2026-05-15T10:00:05.710Z",
+      "type": "rationale_verified",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "final_score": 0.84
+      }
+    }
+  }
+]

@@ -1,0 +1,442 @@
+[
+  {
+    "delay_ms": 500,
+    "envelope": {
+      "seq": 1,
+      "ts": "2026-05-15T10:00:00.500Z",
+      "type": "tick",
+      "payload": {
+        "intent_id": "fixture-intent",
+        "ts": "2026-05-15T10:00:00.500Z",
+        "mark_price": "3500.00",
+        "bid": "3499.50",
+        "ask": "3500.50",
+        "size": "280.000000",
+        "spread_bps": 2.85,
+        "slippage_bps": 6,
+        "vol_30d": 0.7,
+        "var_95_usd": 59066.819392537844,
+        "funding_rate": 0.0001
+      }
+    }
+  },
+  {
+    "delay_ms": 500,
+    "envelope": {
+      "seq": 2,
+      "ts": "2026-05-15T10:00:01.000Z",
+      "type": "tick",
+      "payload": {
+        "intent_id": "fixture-intent",
+        "ts": "2026-05-15T10:00:01.000Z",
+        "mark_price": "3520.00",
+        "bid": "3519.50",
+        "ask": "3520.50",
+        "size": "286.931818",
+        "spread_bps": 2.85,
+        "slippage_bps": 6,
+        "vol_30d": 0.7,
+        "var_95_usd": 60874.98733312573,
+        "funding_rate": 0.0001
+      }
+    }
+  },
+  {
+    "delay_ms": 400,
+    "envelope": {
+      "seq": 3,
+      "ts": "2026-05-15T10:00:01.400Z",
+      "type": "compliance",
+      "payload": {
+        "crossing_id": "crossing-retract-1",
+        "prior_verdict": "compliant",
+        "new_verdict": "conditional",
+        "citation": "MiCA Art. 5(1)"
+      }
+    }
+  },
+  {
+    "delay_ms": 50,
+    "envelope": {
+      "seq": 4,
+      "ts": "2026-05-15T10:00:01.450Z",
+      "type": "threshold",
+      "payload": {
+        "crossing_id": "crossing-retract-1",
+        "intent_id": "fixture-intent",
+        "ts": "2026-05-15T10:00:01.450Z",
+        "rule_id": "MICA_ART_5_1",
+        "citation": "MiCA Art. 5(1)",
+        "boundary": "1000000",
+        "direction": "crossed_up",
+        "snapshot": {
+          "intent_id": "fixture-intent",
+          "ts": "2026-05-15T10:00:01.000Z",
+          "mark_price": "3540.00",
+          "bid": "3539.50",
+          "ask": "3540.50",
+          "size": "285.310734",
+          "spread_bps": 2.85,
+          "slippage_bps": 6.5,
+          "vol_30d": 0.72,
+          "var_95_usd": 62614.27268550076,
+          "funding_rate": 0.0001
+        },
+        "prior_verdict": "compliant",
+        "new_verdict": "conditional"
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 5,
+      "ts": "2026-05-15T10:00:01.510Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "The "
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 6,
+      "ts": "2026-05-15T10:00:01.570Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "transaction "
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 7,
+      "ts": "2026-05-15T10:00:01.630Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "notional, "
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 8,
+      "ts": "2026-05-15T10:00:01.690Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "although "
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 9,
+      "ts": "2026-05-15T10:00:01.750Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "near "
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 10,
+      "ts": "2026-05-15T10:00:01.810Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "the "
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 11,
+      "ts": "2026-05-15T10:00:01.870Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "€1M "
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 12,
+      "ts": "2026-05-15T10:00:01.930Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "MiCA "
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 13,
+      "ts": "2026-05-15T10:00:01.990Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "boundary, "
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 14,
+      "ts": "2026-05-15T10:00:02.050Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "sits "
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 15,
+      "ts": "2026-05-15T10:00:02.110Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "comfortably "
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 16,
+      "ts": "2026-05-15T10:00:02.170Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "below "
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 17,
+      "ts": "2026-05-15T10:00:02.230Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "the "
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 18,
+      "ts": "2026-05-15T10:00:02.290Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "reporting "
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 19,
+      "ts": "2026-05-15T10:00:02.350Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "threshold "
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 20,
+      "ts": "2026-05-15T10:00:02.410Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "of "
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 21,
+      "ts": "2026-05-15T10:00:02.470Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "€10M "
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 22,
+      "ts": "2026-05-15T10:00:02.530Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "for "
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 23,
+      "ts": "2026-05-15T10:00:02.590Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "retail "
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 24,
+      "ts": "2026-05-15T10:00:02.650Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "public "
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 25,
+      "ts": "2026-05-15T10:00:02.710Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "offerings, "
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 26,
+      "ts": "2026-05-15T10:00:02.770Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "so "
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 27,
+      "ts": "2026-05-15T10:00:02.830Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "no "
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 28,
+      "ts": "2026-05-15T10:00:02.890Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "white-paper "
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 29,
+      "ts": "2026-05-15T10:00:02.950Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "obligation "
+      }
+    }
+  },
+  {
+    "delay_ms": 60,
+    "envelope": {
+      "seq": 30,
+      "ts": "2026-05-15T10:00:03.010Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "token": "applies."
+      }
+    }
+  },
+  {
+    "delay_ms": 200,
+    "envelope": {
+      "seq": 31,
+      "ts": "2026-05-15T10:00:03.210Z",
+      "type": "rationale_retracted",
+      "payload": {
+        "rationale_id": "rationale-retract-1",
+        "crossing_id": "crossing-retract-1",
+        "final_score": 0.42,
+        "reason": "rationale claims the wrong threshold; NLI entailment failed"
+      }
+    }
+  }
+]
