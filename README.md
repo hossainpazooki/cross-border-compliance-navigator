@@ -19,6 +19,9 @@
 - **Trace Explorer** — Step-by-step evaluation audit trail with citations
 - **Decision Decoder** — AI explanations anchored to canonical rule outcomes
 - **What-If Analysis** — Counterfactual scenarios with diff overlay
+- **Live Trading Session** — `/live/:intentId` route consumes a WebSocket from the platform-api backend; live Binance ticks → threshold crossings → Claude-streamed rationale gated by an NLI verifier
+- **Retracted Rationale Queue** — Auditor surface listing rationales the NLI gate rolled back (`RetractedRationaleQueue` component, fed from the live-session store)
+- **Playwright + axe E2E** — `/live/:intentId` covered by `e2e/live-session.spec.ts`, CI-triggered against Vercel previews
 
 ## Architecture
 

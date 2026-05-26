@@ -7,3 +7,4 @@ export { RationaleBadge } from './RationaleBadge';
 export { SessionHeader } from './SessionHeader';
 export { RiskComponentBars } from './RiskComponentBars';
 export { GoLiveButton } from './GoLiveButton';
+export { RetractedRationaleQueue } from './RetractedRationaleQueue';

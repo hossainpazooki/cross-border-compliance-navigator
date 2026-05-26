@@ -1,0 +1,72 @@
+name: Playwright on Vercel preview
+
+# Triggers Playwright + axe against a Vercel preview deploy.
+#
+# Vercel posts a `deployment_status` event on every preview. We filter for
+# successful previews (state == "success") on this repo's previews only.
+# The preview URL is injected into PLAYWRIGHT_BASE_URL.
+
+on:
+  deployment_status:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  playwright:
+    name: Playwright + axe
+    runs-on: ubuntu-latest
+    # Only run when a Vercel preview is ready, or on PR sync if a preview exists.
+    if: |
+      (github.event_name == 'deployment_status' &&
+       github.event.deployment_status.state == 'success' &&
+       github.event.deployment.environment != 'Production') ||
+      github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Resolve preview URL
+        id: preview
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
+        run: |
+          if [ "${{ github.event_name }}" = "deployment_status" ]; then
+            echo "url=${{ github.event.deployment_status.target_url }}" >> "$GITHUB_OUTPUT"
+          else
+            # pull_request path: query Vercel for the latest preview deploy of this PR.
+            BRANCH="${{ github.head_ref }}"
+            URL=$(curl -s -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+              "https://api.vercel.com/v6/deployments?projectId=${VERCEL_PROJECT_ID}&target=preview&state=READY&limit=1&meta-githubCommitRef=${BRANCH}&teamId=${VERCEL_TEAM_ID}" \
+              | node -e "let d=''; process.stdin.on('data',c=>d+=c).on('end',()=>{const o=JSON.parse(d); const u=o.deployments?.[0]?.url; if(u) console.log('https://'+u);})")
+            if [ -z "$URL" ]; then
+              echo "No preview deploy found for branch ${BRANCH} — skipping." >&2
+              exit 0
+            fi
+            echo "url=$URL" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run Playwright
+        if: steps.preview.outputs.url != ''
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ steps.preview.outputs.url }}
+        run: npx playwright test --reporter=github
+
+      - name: Upload Playwright report
+        if: failure() && steps.preview.outputs.url != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

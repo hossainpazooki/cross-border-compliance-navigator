@@ -34,3 +34,29 @@ export function useRationale(
 }
 
 const EMPTY_CROSSINGS: ThresholdCrossing[] = [];
+const EMPTY_RATIONALES: Rationale[] = [];
+
+/**
+ * Auditor queue selector — every rationale in the session whose NLI gate
+ * flipped to `retracted`. Ordered most-recent-first by completed_at, then by
+ * insertion order. The BottomWorkbench HITL-style tab consumes this to render
+ * a per-session retracted-rationale list (Phase C4 of the unified plan).
+ */
+export function useRetractedRationales(intentId: string | undefined): Rationale[] {
+  return useSessionStore((s) => {
+    if (!intentId) return EMPTY_RATIONALES;
+    const session = s.sessions[intentId];
+    if (!session) return EMPTY_RATIONALES;
+    const out: Rationale[] = [];
+    for (const r of Object.values(session.rationales)) {
+      if (r.status === 'retracted') out.push(r);
+    }
+    out.sort((a, b) => {
+      const ta = a.completed_at ?? '';
+      const tb = b.completed_at ?? '';
+      if (ta === tb) return 0;
+      return tb.localeCompare(ta);
+    });
+    return out;
+  });
+}

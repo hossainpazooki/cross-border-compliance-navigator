@@ -7,5 +7,6 @@ export {
   useLatestSnapshot,
   useCrossings,
   useRationale,
+  useRetractedRationales,
 } from './selectors';
 export type { SessionState, ConnectionState } from './types';
