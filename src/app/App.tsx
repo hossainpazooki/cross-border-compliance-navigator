@@ -1,6 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import { Header, ViewTabs, Footer } from '@app/layouts';
-import { Navigator, Pathway, Conflicts, WhatIf, Decoder, LogicDemo, DecisionCanvas } from '@/pages';
+import { Navigator, Pathway, Conflicts, WhatIf, Decoder, LogicDemo, DecisionCanvas, LiveSession } from '@/pages';
 
 function App() {
   return (
@@ -8,6 +8,9 @@ function App() {
       <Routes>
         {/* Decision Canvas: Default full-screen single-canvas layout */}
         <Route path="/" element={<DecisionCanvas />} />
+
+        {/* Live trading session */}
+        <Route path="/live/:intentId" element={<LiveSession />} />
 
         {/* Legacy tab-based layout */}
         <Route

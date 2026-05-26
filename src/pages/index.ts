@@ -5,3 +5,4 @@ export { WhatIf } from './WhatIf';
 export { Decoder } from './Decoder';
 export { LogicDemo } from './LogicDemo';
 export { DecisionCanvas } from './DecisionCanvas';
+export { LiveSession } from './LiveSession';

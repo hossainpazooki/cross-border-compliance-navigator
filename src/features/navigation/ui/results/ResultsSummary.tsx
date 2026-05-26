@@ -4,6 +4,7 @@ import { formatStatus } from '@shared/lib';
 import { JurisdictionCard } from './JurisdictionCard';
 import { NextStepsCard } from './NextStepsCard';
 import { QuickStats } from './QuickStats';
+import { GoLiveButton } from '@features/live-session/ui/GoLiveButton';
 
 export function ResultsSummary() {
   const { navigationResult } = useResultsStore();
@@ -44,11 +45,14 @@ export function ResultsSummary() {
             <span className="text-emerald-400">✓</span>
             Analysis Complete
           </CardTitle>
-          <div className="flex items-center gap-2">
-            <Badge variant={statusVariant}>
-              {formatStatus(navigationResult.status)}
-            </Badge>
-            <Badge variant={riskVariant}>{riskLevel} RISK</Badge>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Badge variant={statusVariant}>
+                {formatStatus(navigationResult.status)}
+              </Badge>
+              <Badge variant={riskVariant}>{riskLevel} RISK</Badge>
+            </div>
+            <GoLiveButton />
           </div>
         </CardHeader>
       </Card>
