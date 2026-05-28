@@ -2,7 +2,7 @@
 
 > Cross-border digital assets regulatory compliance analysis across EU (MiCA), UK, US, Switzerland, and Singapore.
 
-**[Live Demo](https://digital-assets-cross-border.vercel.app)** | [Backend Repo](https://github.com/hossainpazooki/regulatory-ke-workbench)
+**[Live Demo](https://cross-border-compliance-navigator.vercel.app)** | [Backend Repo](https://github.com/hossainpazooki/regulatory-ke-workbench)
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)
 ![React](https://img.shields.io/badge/React-18.2-61dafb)
@@ -10,7 +10,7 @@
 
 ## Overview
 
-[![Decision Canvas](docs/screenshot.png)](https://digital-assets-cross-border.vercel.app)
+[![Decision Canvas](docs/screenshot.png)](https://cross-border-compliance-navigator.vercel.app)
 
 ## Features
 
@@ -60,8 +60,8 @@ sequenceDiagram
 ## Quick Start
 
 ```bash
-git clone https://github.com/hossainpazooki/digital-assets-cross-border.git
-cd digital-assets-cross-border
+git clone https://github.com/hossainpazooki/cross-border-compliance-navigator.git
+cd cross-border-compliance-navigator
 npm install
 npm run dev
 ```
