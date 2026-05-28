@@ -6,3 +6,4 @@ export { Decoder } from './Decoder';
 export { LogicDemo } from './LogicDemo';
 export { DecisionCanvas } from './DecisionCanvas';
 export { LiveSession } from './LiveSession';
+export { LiveIntent } from './LiveIntent';

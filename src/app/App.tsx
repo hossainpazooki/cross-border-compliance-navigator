@@ -1,6 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import { Header, ViewTabs, Footer } from '@app/layouts';
-import { Navigator, Pathway, Conflicts, WhatIf, Decoder, LogicDemo, DecisionCanvas, LiveSession } from '@/pages';
+import { Navigator, Pathway, Conflicts, WhatIf, Decoder, LogicDemo, DecisionCanvas, LiveSession, LiveIntent } from '@/pages';
 
 function App() {
   return (
@@ -9,6 +9,8 @@ function App() {
         {/* Decision Canvas: Default full-screen single-canvas layout */}
         <Route path="/" element={<DecisionCanvas />} />
 
+        {/* Live trading: intent-creation form */}
+        <Route path="/live" element={<LiveIntent />} />
         {/* Live trading session */}
         <Route path="/live/:intentId" element={<LiveSession />} />
 

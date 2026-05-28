@@ -1,9 +1,13 @@
 import http from 'node:http';
 import express from 'express';
 import { WebSocketServer, type WebSocket } from 'ws';
-import type { TradeIntent, WSEnvelope } from '@platform/contracts';
+import type {
+  IntentCreateRequest,
+  TradeIntent,
+  WSEnvelope,
+} from '@platform/contracts';
 import { isWSEnvelope } from '@platform/contracts';
-import { getIntent, putIntent } from './intents.js';
+import { createRecord, getIntent, putIntent } from './intents.js';
 import { loadFixture, replay, type FixtureFrame } from './replay.js';
 
 const PORT = Number(process.env.PORT ?? 8787);
@@ -22,14 +26,47 @@ app.use((_req, res, next) => {
   next();
 });
 
+// New shape (matches institutional-defi-platform-api): server generates the id.
+app.post('/v2/intents', (req, res) => {
+  const body = req.body as Partial<IntentCreateRequest> & { intent_id?: string };
+  if (!body || typeof body !== 'object') {
+    res.status(400).json({ error: 'body required' });
+    return;
+  }
+  if ('intent_id' in body) {
+    res.status(422).json({ error: 'intent_id is server-generated; do not send' });
+    return;
+  }
+  if (
+    typeof body.asset !== 'string' ||
+    typeof body.notional_usd !== 'string' ||
+    typeof body.venue_jurisdiction !== 'string'
+  ) {
+    res.status(422).json({ error: 'missing required fields' });
+    return;
+  }
+  const record = createRecord(body as IntentCreateRequest);
+  res.status(201).json(record);
+});
+
+app.get('/v2/intents/:intentId', (req, res) => {
+  const record = getIntent(req.params.intentId);
+  if (!record) {
+    res.status(404).json({ error: 'not found' });
+    return;
+  }
+  res.json(record);
+});
+
+// Legacy: older GoLiveButton path supplies its own intent_id.
 app.post('/intent', (req, res) => {
   const body = req.body as Partial<TradeIntent>;
   if (!body || typeof body.intent_id !== 'string') {
     res.status(400).json({ error: 'missing intent_id' });
     return;
   }
-  putIntent(body as TradeIntent);
-  res.json({ intent_id: body.intent_id });
+  const record = putIntent(body as TradeIntent);
+  res.json({ intent_id: record.intent_id });
 });
 
 app.get('/audit/:intentId', async (req, res) => {
@@ -63,9 +100,17 @@ function pickScenario(intent: TradeIntent | undefined, override?: string | null)
   return 'mica-threshold-crossing';
 }
 
+// Extract intent_id from either the new path-based route /v2/ws/trade/:intent_id
+// (what the real backend uses) or the legacy ?intent_id=... query param.
+function extractIntentIdFromPath(pathname: string): string | undefined {
+  const match = pathname.match(/^\/v2\/ws\/trade\/([^/]+)$/);
+  return match?.[1];
+}
+
 wss.on('connection', (ws: WebSocket, req) => {
   const url = new URL(req.url ?? '/', `http://localhost:${PORT}`);
-  const intentId = url.searchParams.get('intent_id') ?? '';
+  const intentId =
+    extractIntentIdFromPath(url.pathname) ?? url.searchParams.get('intent_id') ?? '';
   const scenarioOverride = url.searchParams.get('scenario');
   const speed = Number(url.searchParams.get('speed') ?? '1') || 1;
 
@@ -98,10 +143,14 @@ wss.on('connection', (ws: WebSocket, req) => {
     );
   };
 
-  ws.on('message', (data) => {
+  ws.on('message', (data, isBinary) => {
+    const text = typeof data === 'string' ? data : data.toString();
+    // Mirror real backend: client replies "pong" as a text frame to our "ping".
+    if (!isBinary && text === 'pong') return;
+
     let parsed: unknown;
     try {
-      parsed = JSON.parse(typeof data === 'string' ? data : data.toString());
+      parsed = JSON.parse(text);
     } catch {
       return;
     }
@@ -110,8 +159,10 @@ wss.on('connection', (ws: WebSocket, req) => {
     void startReplay(ctx.intentId);
   });
 
+  // Real backend sends a TEXT frame "ping" every WS_PING_INTERVAL_SECONDS — NOT
+  // the WebSocket-protocol ping. Mirror that so clients exercise the same path.
   ctx.heartbeat = setInterval(() => {
-    if (ws.readyState === ws.OPEN) ws.ping();
+    if (ws.readyState === ws.OPEN) ws.send('ping');
   }, 20_000);
 
   ws.on('close', () => {

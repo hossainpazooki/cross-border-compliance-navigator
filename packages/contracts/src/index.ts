@@ -1,4 +1,11 @@
-export type { TradeIntent } from './intent';
+export type {
+  TradeIntent,
+  IntentCreateRequest,
+  IntentRecord,
+  IntentStatus,
+  IntentDirection,
+  InvestorType,
+} from './intent';
 export type { TradeSnapshot } from './snapshot';
 export type { ThresholdCrossing } from './crossing';
 export type { Rationale, NLIStatus } from './rationale';

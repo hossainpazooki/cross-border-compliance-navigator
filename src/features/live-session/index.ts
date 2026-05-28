@@ -8,5 +8,7 @@ export {
   useCrossings,
   useRationale,
   useRetractedRationales,
+  useLastError,
 } from './selectors';
-export type { SessionState, ConnectionState } from './types';
+export type { SessionState, ConnectionState, WSErrorInfo, WSErrorCode } from './types';
+export { createIntent, getIntent, IntentApiError } from './api/intentsApi';

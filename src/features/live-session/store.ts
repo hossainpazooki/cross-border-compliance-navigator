@@ -4,13 +4,19 @@ import {
   type ServerEnvelope,
   type TradeIntent,
 } from '@platform/contracts';
-import type { ApplyResult, ConnectionState, SessionState } from './types';
+import type {
+  ApplyResult,
+  ConnectionState,
+  SessionState,
+  WSErrorInfo,
+} from './types';
 
 interface SessionStoreState {
   sessions: Record<string, SessionState>;
   openSession: (intentId: string, intent: TradeIntent) => void;
   closeSession: (intentId: string) => void;
   setConnection: (intentId: string, connection: ConnectionState) => void;
+  setLastError: (intentId: string, error: WSErrorInfo | null) => void;
   applyEnvelope: (intentId: string, envelope: ServerEnvelope) => ApplyResult;
   replayAuditEnvelopes: (intentId: string, envelopes: ServerEnvelope[]) => void;
 }
@@ -24,6 +30,7 @@ function initialSessionState(intent: TradeIntent): SessionState {
     rationales: {},
     connection: 'connecting',
     lastSeq: 0,
+    lastError: null,
   };
 }
 
@@ -141,6 +148,18 @@ export const useSessionStore = create<SessionStoreState>((set, get) => ({
       };
     }),
 
+  setLastError: (intentId, error) =>
+    set((s) => {
+      const session = s.sessions[intentId];
+      if (!session) return s;
+      return {
+        sessions: {
+          ...s.sessions,
+          [intentId]: { ...session, lastError: error },
+        },
+      };
+    }),
+
   applyEnvelope: (intentId, envelope) => {
     const session = get().sessions[intentId];
     if (!session) return { gap: false };
@@ -172,6 +191,7 @@ export const useSessionStore = create<SessionStoreState>((set, get) => ({
       rationales: {},
       lastSeq: 0,
       connection: 'open',
+      lastError: null,
     };
     for (const envelope of envelopes) {
       working = { ...reduce(working, envelope), lastSeq: envelope.seq };

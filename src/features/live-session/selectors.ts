@@ -1,6 +1,6 @@
 import type { Rationale, ThresholdCrossing, TradeSnapshot, Verdict } from '@platform/contracts';
 import { useSessionStore } from './store';
-import type { ConnectionState, SessionState } from './types';
+import type { ConnectionState, SessionState, WSErrorInfo } from './types';
 
 export function useSession(intentId: string | undefined): SessionState | undefined {
   return useSessionStore((s) => (intentId ? s.sessions[intentId] : undefined));
@@ -18,6 +18,10 @@ export function useCurrentVerdict(intentId: string | undefined): Verdict {
 
 export function useLatestSnapshot(intentId: string | undefined): TradeSnapshot | null {
   return useSessionStore((s) => (intentId && s.sessions[intentId]?.latestSnapshot) || null);
+}
+
+export function useLastError(intentId: string | undefined): WSErrorInfo | null {
+  return useSessionStore((s) => (intentId && s.sessions[intentId]?.lastError) || null);
 }
 
 export function useCrossings(intentId: string | undefined): ThresholdCrossing[] {

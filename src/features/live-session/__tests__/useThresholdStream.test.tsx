@@ -7,6 +7,7 @@ interface MockState {
   lastMessage: MessageEvent | null;
   readyState: number;
   sendJsonMessage: ReturnType<typeof vi.fn>;
+  sendMessage: ReturnType<typeof vi.fn>;
   onOpenHandler: (() => void) | null;
 }
 
@@ -14,6 +15,7 @@ const mockState: MockState = {
   lastMessage: null,
   readyState: 0,
   sendJsonMessage: vi.fn(),
+  sendMessage: vi.fn(),
   onOpenHandler: null,
 };
 
@@ -28,6 +30,7 @@ vi.mock('react-use-websocket', () => {
         lastMessage: mockState.lastMessage,
         readyState: mockState.readyState,
         sendJsonMessage: mockState.sendJsonMessage,
+        sendMessage: mockState.sendMessage,
       };
     }
   );
@@ -80,6 +83,7 @@ beforeEach(() => {
   mockState.lastMessage = null;
   mockState.readyState = 1;
   mockState.sendJsonMessage.mockReset();
+  mockState.sendMessage.mockReset();
   mockState.onOpenHandler = null;
 });
 
@@ -166,6 +170,31 @@ describe('useThresholdStream', () => {
     mockState.lastMessage = new MessageEvent('message', { data: '{not json' });
     renderHook(() => useThresholdStream({ intentId: INTENT_ID }));
     expect(useSessionStore.getState().sessions[INTENT_ID].lastSeq).toBe(0);
+  });
+
+  it('replies with text "pong" when the server sends text "ping"', () => {
+    mockState.lastMessage = new MessageEvent('message', { data: 'ping' });
+    renderHook(() => useThresholdStream({ intentId: INTENT_ID }));
+    expect(mockState.sendMessage).toHaveBeenCalledWith('pong');
+    // Heartbeat is NOT a JSON envelope — it must not advance lastSeq.
+    expect(useSessionStore.getState().sessions[INTENT_ID].lastSeq).toBe(0);
+  });
+
+  it('captures error envelope code into lastError and blocks reconnect on intent_terminal', () => {
+    const env: ServerEnvelope = {
+      seq: 1,
+      ts: '2026-05-15T10:00:00.000Z',
+      type: 'error',
+      payload: { code: 'intent_terminal', message: 'session closed' },
+    };
+    mockState.lastMessage = envelopeMessage(env);
+    renderHook(() => useThresholdStream({ intentId: INTENT_ID }));
+    const session = useSessionStore.getState().sessions[INTENT_ID];
+    expect(session.lastError).toEqual({
+      code: 'intent_terminal',
+      message: 'session closed',
+    });
+    expect(session.connection).toBe('error');
   });
 
   it('ignores subscribe envelopes coming from the server', () => {
