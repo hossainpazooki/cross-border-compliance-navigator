@@ -19,7 +19,12 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        # `npm ci` is too strict given @rolldown/binding-wasm32-wasi's
+        # transitive optional deps (@emnapi/core, @emnapi/runtime) don't
+        # appear in the lockfile when installed from a non-wasm32 host.
+        # `npm install` on a fresh checkout is functionally equivalent and
+        # tolerates that gap.
+        run: npm install --no-audit --no-fund
 
       - name: Run TypeScript check
         run: npm run typecheck
@@ -40,7 +45,12 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        # `npm ci` is too strict given @rolldown/binding-wasm32-wasi's
+        # transitive optional deps (@emnapi/core, @emnapi/runtime) don't
+        # appear in the lockfile when installed from a non-wasm32 host.
+        # `npm install` on a fresh checkout is functionally equivalent and
+        # tolerates that gap.
+        run: npm install --no-audit --no-fund
 
       - name: Build
         run: npm run build
@@ -67,7 +77,12 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        # `npm ci` is too strict given @rolldown/binding-wasm32-wasi's
+        # transitive optional deps (@emnapi/core, @emnapi/runtime) don't
+        # appear in the lockfile when installed from a non-wasm32 host.
+        # `npm install` on a fresh checkout is functionally equivalent and
+        # tolerates that gap.
+        run: npm install --no-audit --no-fund
 
       - name: Run tests
         run: npm test --if-present
