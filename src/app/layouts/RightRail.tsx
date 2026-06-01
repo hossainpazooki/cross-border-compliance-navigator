@@ -2,6 +2,7 @@
  * RightRail Component
  * Contains the Outcome summary and Decoder panel
  * Phase 5: Full DecoderPanel with citation anchoring
+ * Supports credit mode with adapted tier labels
  */
 
 import { useCallback, useEffect } from 'react';
@@ -11,6 +12,14 @@ import { useUIStore } from '@app/stores';
 import { useDecoder, DecoderPanel } from '@features/decoder';
 import { Badge, PanelHeader } from '@shared/ui';
 import { RightRailArea } from './CanvasLayout';
+
+/** Credit mode maps regulatory tiers to credit-specific labels */
+// eslint-disable-next-line react-refresh/only-export-components
+export const CREDIT_TIER_LABELS: Record<string, string> = {
+  retail: 'Summary',
+  institutional: 'Detailed',
+  regulatory: 'Audit Trail',
+};
 
 export function RightRail() {
   const { panels, togglePanel } = usePanelState();

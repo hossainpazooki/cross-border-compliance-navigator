@@ -11,6 +11,22 @@ interface TraceExplorerProps {
   horizontal?: boolean;
 }
 
+/** Credit pipeline phase label mapping */
+const CREDIT_PHASE_LABELS: Record<string, string> = {
+  'doc-classification': 'Document Classification',
+  'dscr-check': 'Financial Agent',
+  'credit-score-check': 'Financial Agent',
+  'legal-analysis': 'Legal Agent',
+  'market-analysis': 'Market Agent',
+  'synthesis': 'Synthesis',
+  'hitl-review': 'HITL Routing',
+  'auto-approve': 'HITL Routing',
+};
+
+function getCreditPhaseLabel(nodeId: string): string | null {
+  return CREDIT_PHASE_LABELS[nodeId] || null;
+}
+
 /**
  * Get status color variant
  */
@@ -60,6 +76,9 @@ export function TraceExplorer({
               onMouseEnter={() => onNodeHover?.(step.nodeId)}
               onMouseLeave={() => onNodeHover?.(null)}
             >
+              {getCreditPhaseLabel(step.nodeId) && (
+                <div className="text-[10px] text-purple-400 mb-0.5">{getCreditPhaseLabel(step.nodeId)}</div>
+              )}
               <div className="font-medium text-slate-200 whitespace-nowrap">
                 {step.condition}
               </div>

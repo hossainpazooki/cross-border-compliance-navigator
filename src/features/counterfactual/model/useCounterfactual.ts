@@ -51,6 +51,26 @@ function generateDemoCounterfactualResponse(request: InlineAnalyzeRequest): Coun
       riskDelta = 0;
       newRequirements.push('Updated compliance requirements may apply');
       break;
+    case 'rate_shock':
+      statusChanged = true;
+      riskDelta = 2;
+      newRequirements.push('Stress test DSCR under elevated rates');
+      newRequirements.push('Re-evaluate debt service coverage at +200bps');
+      removedRequirements.push('Standard rate assumption');
+      break;
+    case 'revenue_decline':
+      statusChanged = true;
+      riskDelta = 1;
+      newRequirements.push('Revised cash flow projections required');
+      newRequirements.push('Additional collateral may be needed');
+      break;
+    case 'covenant_breach':
+      statusChanged = true;
+      riskDelta = 3;
+      newRequirements.push('Covenant waiver or amendment required');
+      newRequirements.push('Enhanced monitoring and reporting');
+      newRequirements.push('Risk committee escalation');
+      break;
     default:
       riskDelta = 0;
   }

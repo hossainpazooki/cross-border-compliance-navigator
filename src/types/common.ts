@@ -29,7 +29,10 @@ export type ScenarioType =
   | 'threshold'
   | 'temporal'
   | 'protocol_change'
-  | 'regulatory_change';
+  | 'regulatory_change'
+  | 'rate_shock'
+  | 'revenue_decline'
+  | 'covenant_breach';
 
 // Risk levels
 export type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';

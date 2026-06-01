@@ -1,0 +1,158 @@
+{
+  "id": "credit-decision-pipeline",
+  "version": "2024.Q4.1",
+  "name": "Credit Decision Pipeline",
+  "description": "Multi-agent credit underwriting decision tree for commercial lending",
+  "metadata": {
+    "jurisdiction": "US",
+    "framework": "Credit Risk Assessment",
+    "effectiveDate": "2024-01-01",
+    "tags": ["credit", "underwriting", "DSCR", "HITL"]
+  },
+  "tree": {
+    "nodeId": "doc-classification",
+    "type": "condition",
+    "condition": {
+      "fact": "documents.complete",
+      "op": "eq",
+      "value": true
+    },
+    "annotation": "Are all required documents present?",
+    "children": {
+      "true": {
+        "nodeId": "dscr-check",
+        "type": "condition",
+        "condition": {
+          "fact": "financial.dscr",
+          "op": "gte",
+          "value": 1.25
+        },
+        "annotation": "Is DSCR > 1.25?",
+        "children": {
+          "true": {
+            "nodeId": "credit-score-check",
+            "type": "condition",
+            "condition": {
+              "fact": "borrower.credit_score",
+              "op": "gte",
+              "value": 650
+            },
+            "annotation": "Is credit score > 650?",
+            "children": {
+              "true": {
+                "nodeId": "legal-analysis",
+                "type": "condition",
+                "condition": {
+                  "fact": "legal.regulatory_flags",
+                  "op": "eq",
+                  "value": true
+                },
+                "annotation": "Any regulatory flags?",
+                "children": {
+                  "true": {
+                    "nodeId": "refer-regulatory",
+                    "type": "leaf",
+                    "decision": "Refer: Regulatory Review Required",
+                    "status": "requires_action",
+                    "obligations": [
+                      "regulatory-clearance",
+                      "legal-review",
+                      "compliance-sign-off"
+                    ]
+                  },
+                  "false": {
+                    "nodeId": "market-analysis",
+                    "type": "condition",
+                    "condition": {
+                      "fact": "market.risk_score",
+                      "op": "lt",
+                      "value": 70
+                    },
+                    "annotation": "Market risk score < 70?",
+                    "children": {
+                      "true": {
+                        "nodeId": "synthesis",
+                        "type": "condition",
+                        "condition": {
+                          "fact": "synthesis.confidence",
+                          "op": "gte",
+                          "value": 0.75
+                        },
+                        "annotation": "Overall confidence > 0.75?",
+                        "children": {
+                          "true": {
+                            "nodeId": "auto-approve",
+                            "type": "leaf",
+                            "decision": "Auto-Approve: All criteria met with high confidence",
+                            "status": "compliant",
+                            "obligations": [
+                              "document-filing",
+                              "covenant-monitoring",
+                              "quarterly-review"
+                            ]
+                          },
+                          "false": {
+                            "nodeId": "hitl-review",
+                            "type": "leaf",
+                            "decision": "HITL Review Required: Confidence below threshold",
+                            "status": "requires_action",
+                            "obligations": [
+                              "manual-review",
+                              "senior-approval",
+                              "risk-committee-notification"
+                            ]
+                          }
+                        }
+                      },
+                      "false": {
+                        "nodeId": "decline-market-risk",
+                        "type": "leaf",
+                        "decision": "Decline: High Market Risk",
+                        "status": "blocked",
+                        "obligations": [
+                          "decline-notification",
+                          "risk-documentation"
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "false": {
+                "nodeId": "decline-credit-score",
+                "type": "leaf",
+                "decision": "Decline: Low Credit Score",
+                "status": "blocked",
+                "obligations": [
+                  "decline-notification",
+                  "adverse-action-notice"
+                ]
+              }
+            }
+          },
+          "false": {
+            "nodeId": "decline-dscr",
+            "type": "leaf",
+            "decision": "Decline: Insufficient DSCR",
+            "status": "blocked",
+            "obligations": [
+              "decline-notification",
+              "financial-summary"
+            ]
+          }
+        }
+      },
+      "false": {
+        "nodeId": "refer-missing-docs",
+        "type": "leaf",
+        "decision": "Refer: Missing Documents",
+        "status": "requires_action",
+        "obligations": [
+          "document-request",
+          "follow-up-timeline",
+          "pending-review-hold"
+        ]
+      }
+    }
+  }
+}
