@@ -8,4 +8,6 @@ export { SessionHeader } from './SessionHeader';
 export { RiskComponentBars } from './RiskComponentBars';
 export { GoLiveButton } from './GoLiveButton';
 export { RetractedRationaleQueue } from './RetractedRationaleQueue';
+export { OrgPanel } from './OrgPanel';
+export { AdvisoryFlagQueue } from './AdvisoryFlagQueue';
 export { IntentForm } from './IntentForm';

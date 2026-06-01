@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { ServerEnvelope, ThresholdCrossing, TradeIntent, TradeSnapshot } from '@platform/contracts';
 import { useSessionStore } from '../store';
+import { orchestratorFor } from '../orchestratorRouting';
 
 const INTENT_ID = 'intent-test';
 
@@ -241,6 +242,153 @@ describe('sessionStore.replayAuditEnvelopes', () => {
     expect(() =>
       useSessionStore.getState().replayAuditEnvelopes('missing', [])
     ).not.toThrow();
+  });
+});
+
+function crossingWithRule(id: string, ruleId: string): ThresholdCrossing {
+  return { ...crossing(id, snapshot()), rule_id: ruleId };
+}
+
+// Drives a crossing to a verified rationale so lead positions can be appended.
+function verifyCrossing(seq: { n: number }, id: string, ruleId = 'MICA_ART_5_1'): void {
+  const s = useSessionStore.getState();
+  s.applyEnvelope(INTENT_ID, envelope(seq.n++, 'threshold', crossingWithRule(id, ruleId)));
+  s.applyEnvelope(INTENT_ID, envelope(seq.n++, 'rationale_tok', { rationale_id: `r-${id}`, crossing_id: id, token: 'x' }));
+  s.applyEnvelope(INTENT_ID, envelope(seq.n++, 'rationale_verified', { rationale_id: `r-${id}`, crossing_id: id, final_score: 0.9 }));
+}
+
+describe('orchestratorFor routing', () => {
+  it('routes seeded compliance rule_ids to the compliance lead', () => {
+    for (const rule of ['MICA_ART_5_1', 'MICA_ART_5_2', 'FCA_RP_3_2', 'SEC_REG_D']) {
+      expect(orchestratorFor(rule)).toBe('compliance');
+    }
+  });
+
+  it('routes RISK_-prefixed rule_ids to the risk lead', () => {
+    expect(orchestratorFor('RISK_VAR_95')).toBe('risk');
+    expect(orchestratorFor('RISK_SLIPPAGE')).toBe('risk');
+  });
+
+  it('defaults unknown rule_ids to compliance (missed obligation is worse)', () => {
+    expect(orchestratorFor('UNKNOWN_RULE')).toBe('compliance');
+    expect(orchestratorFor('')).toBe('compliance');
+  });
+
+  it('resolves a dual-implicated crossing to a SINGLE orchestrator by rule_id', () => {
+    // A notional breach that trips both a MiCA obligation and a VaR limit:
+    // the originating rule_id decides the one orchestrator — never two.
+    const micaOriginated = orchestratorFor('MICA_ART_5_1');
+    const riskOriginated = orchestratorFor('RISK_VAR_95');
+    expect(micaOriginated).toBe('compliance');
+    expect(riskOriginated).toBe('risk');
+    // Each is a single deterministic value, not an array / ambiguous result.
+    expect(typeof micaOriginated).toBe('string');
+  });
+});
+
+describe('sessionStore agent-org artifacts', () => {
+  beforeEach(() => {
+    useSessionStore.getState().openSession(INTENT_ID, intent());
+  });
+
+  it('appends a lead position only after the rationale is verified', () => {
+    const seq = { n: 1 };
+    verifyCrossing(seq, 'c1');
+    useSessionStore.getState().applyEnvelope(
+      INTENT_ID,
+      envelope(seq.n++, 'lead_position', { crossing_id: 'c1', lead: 'compliance', stance: 'satisfy_both', basis: 'b' })
+    );
+    expect(useSessionStore.getState().sessions[INTENT_ID].leadPositions['c1']).toHaveLength(1);
+  });
+
+  it('holds at most two positions per crossing (one compliance, one risk)', () => {
+    const seq = { n: 1 };
+    verifyCrossing(seq, 'c1');
+    const s = useSessionStore.getState();
+    s.applyEnvelope(INTENT_ID, envelope(seq.n++, 'lead_position', { crossing_id: 'c1', lead: 'compliance', stance: 'stricter', basis: 'b' }));
+    s.applyEnvelope(INTENT_ID, envelope(seq.n++, 'lead_position', { crossing_id: 'c1', lead: 'risk', stance: 'escalate', basis: 'b' }));
+    // A duplicate compliance lead is ignored — never a third position.
+    s.applyEnvelope(INTENT_ID, envelope(seq.n++, 'lead_position', { crossing_id: 'c1', lead: 'compliance', stance: 'earliest', basis: 'b2' }));
+    const positions = useSessionStore.getState().sessions[INTENT_ID].leadPositions['c1'];
+    expect(positions).toHaveLength(2);
+    expect(positions.filter((p) => p.lead === 'compliance')).toHaveLength(1);
+  });
+
+  it('appends auditor findings keyed by crossing_id', () => {
+    const seq = { n: 1 };
+    verifyCrossing(seq, 'c1');
+    const s = useSessionStore.getState();
+    s.applyEnvelope(INTENT_ID, envelope(seq.n++, 'auditor_finding', { crossing_id: 'c1', target: 'rationale', verdict: 'pass', basis: 'grounded' }));
+    s.applyEnvelope(INTENT_ID, envelope(seq.n++, 'auditor_finding', { crossing_id: 'c1', target: 'lead_position', verdict: 'advisory', basis: 'consider stricter' }));
+    expect(useSessionStore.getState().sessions[INTENT_ID].auditorFindings['c1']).toHaveLength(2);
+  });
+
+  it('invariant: every crossing holds ≤1 draft and ≤2 lead positions, never 2 drafts', () => {
+    const s = useSessionStore.getState();
+    let seq = 1;
+    // Build a handful of crossings through assorted lifecycles.
+    const ids = ['p1', 'p2', 'p3', 'p4'];
+    for (const id of ids) {
+      s.applyEnvelope(INTENT_ID, envelope(seq++, 'threshold', crossingWithRule(id, 'MICA_ART_5_1')));
+      s.applyEnvelope(INTENT_ID, envelope(seq++, 'rationale_tok', { rationale_id: `r-${id}`, crossing_id: id, token: 'x' }));
+      s.applyEnvelope(INTENT_ID, envelope(seq++, 'rationale_verified', { rationale_id: `r-${id}`, crossing_id: id, final_score: 0.9 }));
+      // Bombard with redundant lead positions — store must cap at two.
+      for (const lead of ['compliance', 'risk', 'compliance', 'risk'] as const) {
+        const stance = lead === 'compliance' ? 'stricter' : 'escalate';
+        s.applyEnvelope(INTENT_ID, envelope(seq++, 'lead_position', { crossing_id: id, lead, stance, basis: 'b' }));
+      }
+    }
+    const session = useSessionStore.getState().sessions[INTENT_ID];
+    for (const id of ids) {
+      // exactly one rationale draft entry per crossing
+      expect(session.rationales[id]).toBeDefined();
+      expect(Array.isArray(session.rationales[id])).toBe(false);
+      // at most two lead positions, at most one per lead
+      const positions = session.leadPositions[id] ?? [];
+      expect(positions.length).toBeLessThanOrEqual(2);
+      expect(positions.filter((p) => p.lead === 'compliance').length).toBeLessThanOrEqual(1);
+      expect(positions.filter((p) => p.lead === 'risk').length).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('NEVER surfaces a lead position for a retracted crossing (wake-on-verified)', () => {
+    const s = useSessionStore.getState();
+    let seq = 1;
+    s.applyEnvelope(INTENT_ID, envelope(seq++, 'threshold', crossingWithRule('c1', 'MICA_ART_5_1')));
+    s.applyEnvelope(INTENT_ID, envelope(seq++, 'rationale_tok', { rationale_id: 'r1', crossing_id: 'c1', token: 'x' }));
+    s.applyEnvelope(INTENT_ID, envelope(seq++, 'rationale_retracted', { rationale_id: 'r1', crossing_id: 'c1', final_score: 0.3, reason: 'NLI failed' }));
+    // A lead position arriving for a retracted crossing must be dropped.
+    s.applyEnvelope(INTENT_ID, envelope(seq++, 'lead_position', { crossing_id: 'c1', lead: 'compliance', stance: 'stricter', basis: 'b' }));
+    const session = useSessionStore.getState().sessions[INTENT_ID];
+    expect(session.rationales['c1'].status).toBe('retracted');
+    expect(session.leadPositions['c1']).toBeUndefined();
+  });
+
+  it('drops a lead position that arrives before the rationale is verified (streaming)', () => {
+    const s = useSessionStore.getState();
+    let seq = 1;
+    s.applyEnvelope(INTENT_ID, envelope(seq++, 'threshold', crossingWithRule('c1', 'MICA_ART_5_1')));
+    s.applyEnvelope(INTENT_ID, envelope(seq++, 'rationale_tok', { rationale_id: 'r1', crossing_id: 'c1', token: 'x' }));
+    // still 'streaming' — not yet verified
+    s.applyEnvelope(INTENT_ID, envelope(seq++, 'lead_position', { crossing_id: 'c1', lead: 'risk', stance: 'escalate', basis: 'b' }));
+    expect(useSessionStore.getState().sessions[INTENT_ID].leadPositions['c1']).toBeUndefined();
+  });
+
+  it('reconstructs positions and findings from a full replay', () => {
+    const s = useSessionStore.getState();
+    const replay: ServerEnvelope[] = [
+      envelope(1, 'threshold', crossingWithRule('c1', 'MICA_ART_5_1')),
+      envelope(2, 'rationale_tok', { rationale_id: 'r1', crossing_id: 'c1', token: 'hi' }),
+      envelope(3, 'rationale_verified', { rationale_id: 'r1', crossing_id: 'c1', final_score: 0.9 }),
+      envelope(4, 'lead_position', { crossing_id: 'c1', lead: 'compliance', stance: 'satisfy_both', basis: 'b' }),
+      envelope(5, 'lead_position', { crossing_id: 'c1', lead: 'risk', stance: 'hold', basis: 'b' }),
+      envelope(6, 'auditor_finding', { crossing_id: 'c1', target: 'lead_position', verdict: 'advisory', basis: 'flag' }),
+    ];
+    s.replayAuditEnvelopes(INTENT_ID, replay);
+    const session = useSessionStore.getState().sessions[INTENT_ID];
+    expect(session.leadPositions['c1']).toHaveLength(2);
+    expect(session.auditorFindings['c1']).toHaveLength(1);
+    expect(session.lastSeq).toBe(6);
   });
 });
 

@@ -9,6 +9,7 @@
 import type { ThresholdCrossing } from './crossing';
 import type { TradeSnapshot } from './snapshot';
 import type { Verdict } from './verdict';
+import type { LeadPosition, AuditorFinding, LeadStance } from './position';
 
 export interface SubscribePayload {
   intent_id: string;
@@ -47,6 +48,12 @@ export interface ErrorPayload {
 
 export type RiskUpdatePayload = Record<string, unknown>;
 
+// SOURCE: regulatory-rule-engine (planned) `src/agents/ws_schemas.py`.
+// LeadPosition / AuditorFinding ride the envelope union verbatim (the payload
+// IS the artifact) so they reconstruct from replay alongside rationales.
+export type LeadPositionPayload = LeadPosition;
+export type AuditorFindingPayload = AuditorFinding;
+
 export type WSMessage =
   | { type: 'subscribe'; payload: SubscribePayload }
   | { type: 'tick'; payload: TradeSnapshot }
@@ -56,6 +63,8 @@ export type WSMessage =
   | { type: 'rationale_tok'; payload: RationaleTokPayload }
   | { type: 'rationale_verified'; payload: RationaleVerifiedPayload }
   | { type: 'rationale_retracted'; payload: RationaleRetractedPayload }
+  | { type: 'lead_position'; payload: LeadPositionPayload }
+  | { type: 'auditor_finding'; payload: AuditorFindingPayload }
   | { type: 'error'; payload: ErrorPayload };
 
 export type MessageType = WSMessage['type'];
@@ -119,6 +128,41 @@ function isThresholdCrossing(v: unknown): v is ThresholdCrossing {
   );
 }
 
+const COMPLIANCE_STANCES: ReadonlySet<LeadStance> = new Set<LeadStance>([
+  'cumulative',
+  'stricter',
+  'home_jurisdiction',
+  'satisfy_both',
+  'earliest',
+]);
+const RISK_STANCES: ReadonlySet<LeadStance> = new Set<LeadStance>(['escalate', 'hold']);
+
+function isLeadStance(lead: unknown, stance: unknown): stance is LeadStance {
+  if (lead === 'compliance') return COMPLIANCE_STANCES.has(stance as LeadStance);
+  if (lead === 'risk') return RISK_STANCES.has(stance as LeadStance);
+  return false;
+}
+
+function isLeadPosition(v: unknown): v is LeadPosition {
+  if (!isObject(v)) return false;
+  return (
+    isString(v.crossing_id) &&
+    (v.lead === 'compliance' || v.lead === 'risk') &&
+    isLeadStance(v.lead, v.stance) &&
+    isString(v.basis)
+  );
+}
+
+function isAuditorFinding(v: unknown): v is AuditorFinding {
+  if (!isObject(v)) return false;
+  return (
+    isString(v.crossing_id) &&
+    (v.target === 'rationale' || v.target === 'lead_position') &&
+    (v.verdict === 'pass' || v.verdict === 'fail' || v.verdict === 'advisory') &&
+    isString(v.basis)
+  );
+}
+
 const MESSAGE_TYPES: ReadonlySet<MessageType> = new Set<MessageType>([
   'subscribe',
   'tick',
@@ -128,6 +172,8 @@ const MESSAGE_TYPES: ReadonlySet<MessageType> = new Set<MessageType>([
   'rationale_tok',
   'rationale_verified',
   'rationale_retracted',
+  'lead_position',
+  'auditor_finding',
   'error',
 ]);
 
@@ -172,6 +218,10 @@ export function isWSEnvelope(v: unknown): v is WSEnvelope {
         isNumber(p.final_score) &&
         isString(p.reason)
       );
+    case 'lead_position':
+      return isLeadPosition(p);
+    case 'auditor_finding':
+      return isAuditorFinding(p);
     case 'error':
       return isString(p.code) && isString(p.message);
     default:

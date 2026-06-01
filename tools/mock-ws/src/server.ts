@@ -115,8 +115,16 @@ wss.on('connection', (ws: WebSocket, req) => {
   const speed = Number(url.searchParams.get('speed') ?? '1') || 1;
 
   const ctx: ClientContext = { intentId, controller: null, heartbeat: null };
+  // A client both connects with ?intent_id=… AND sends a `subscribe` frame, so
+  // startReplay can fire twice per connection. This synchronous latch ensures
+  // exactly one replay — a second pass would re-deliver every envelope,
+  // duplicating append-only artifacts (e.g. auditor findings) downstream. It is
+  // set before the first `await` so the two calls cannot race past it.
+  let replayStarted = false;
 
   const startReplay = async (id: string) => {
+    if (replayStarted) return;
+    replayStarted = true;
     const intent = getIntent(id);
     const scenario = pickScenario(intent, scenarioOverride);
     let frames: FixtureFrame[];

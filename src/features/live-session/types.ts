@@ -1,4 +1,6 @@
 import type {
+  AuditorFinding,
+  LeadPosition,
   Rationale,
   ThresholdCrossing,
   TradeIntent,
@@ -32,6 +34,11 @@ export interface SessionState {
   latestSnapshot: TradeSnapshot | null;
   crossings: ThresholdCrossing[];
   rationales: Record<string, Rationale>;
+  // Agent-org artifacts, both keyed by crossing_id and append-only (Appendix A
+  // §A.4). Reconstructible from `replayAuditEnvelopes` since every envelope
+  // carries crossing_id. Invariant: ≤2 leadPositions per crossing.
+  leadPositions: Record<string, LeadPosition[]>;
+  auditorFindings: Record<string, AuditorFinding[]>;
   connection: ConnectionState;
   lastSeq: number;
   lastError: WSErrorInfo | null;

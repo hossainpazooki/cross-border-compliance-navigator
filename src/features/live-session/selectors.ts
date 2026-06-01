@@ -1,4 +1,11 @@
-import type { Rationale, ThresholdCrossing, TradeSnapshot, Verdict } from '@platform/contracts';
+import type {
+  AuditorFinding,
+  LeadPosition,
+  Rationale,
+  ThresholdCrossing,
+  TradeSnapshot,
+  Verdict,
+} from '@platform/contracts';
 import { useSessionStore } from './store';
 import type { ConnectionState, SessionState, WSErrorInfo } from './types';
 
@@ -39,6 +46,57 @@ export function useRationale(
 
 const EMPTY_CROSSINGS: ThresholdCrossing[] = [];
 const EMPTY_RATIONALES: Rationale[] = [];
+const EMPTY_POSITIONS: LeadPosition[] = [];
+const EMPTY_FINDINGS: AuditorFinding[] = [];
+
+/**
+ * Lead positions for one crossing. Returns a stable empty array reference
+ * (mirroring `useRationale`'s memoized-empty pattern) so a crossing with no
+ * positions never triggers a re-render churn.
+ *
+ * The store guards appends so positions only ever exist for a *verified*
+ * crossing — a retracted draft yields zero positions (Appendix A §A.4). This
+ * selector therefore cannot surface a position for a retracted crossing.
+ */
+export function useLeadPositions(
+  intentId: string | undefined,
+  crossingId: string
+): LeadPosition[] {
+  return useSessionStore(
+    (s) => (intentId ? s.sessions[intentId]?.leadPositions[crossingId] : undefined) ?? EMPTY_POSITIONS
+  );
+}
+
+/** Auditor findings for one crossing (stable empty array when none). */
+export function useAuditorFindings(
+  intentId: string | undefined,
+  crossingId: string
+): AuditorFinding[] {
+  return useSessionStore(
+    (s) => (intentId ? s.sessions[intentId]?.auditorFindings[crossingId] : undefined) ?? EMPTY_FINDINGS
+  );
+}
+
+/**
+ * Advisory auditor findings across the whole session — `target: 'lead_position'`
+ * findings, which flag debatable judgment WITHOUT blocking. Surfaced separately
+ * from retracted rationales so an advisory flag is never conflated with an
+ * ungrounded-claim retraction (Appendix A §A.4).
+ */
+export function useAdvisoryFindings(intentId: string | undefined): AuditorFinding[] {
+  return useSessionStore((s) => {
+    if (!intentId) return EMPTY_FINDINGS;
+    const session = s.sessions[intentId];
+    if (!session) return EMPTY_FINDINGS;
+    const out: AuditorFinding[] = [];
+    for (const findings of Object.values(session.auditorFindings)) {
+      for (const f of findings) {
+        if (f.target === 'lead_position') out.push(f);
+      }
+    }
+    return out.length === 0 ? EMPTY_FINDINGS : out;
+  });
+}
 
 /**
  * Auditor queue selector — every rationale in the session whose NLI gate

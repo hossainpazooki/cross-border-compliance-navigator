@@ -666,5 +666,47 @@
         "final_score": 0.84
       }
     }
+  },
+  {
+    "delay_ms": 200,
+    "envelope": {
+      "seq": 49,
+      "ts": "2026-05-15T10:00:05.910Z",
+      "type": "lead_position",
+      "payload": {
+        "crossing_id": "crossing-mica-1",
+        "lead": "compliance",
+        "stance": "stricter",
+        "basis": "EU MiCA white-paper obligation is the binding constraint; apply the stricter EU rule."
+      }
+    }
+  },
+  {
+    "delay_ms": 120,
+    "envelope": {
+      "seq": 50,
+      "ts": "2026-05-15T10:00:06.030Z",
+      "type": "lead_position",
+      "payload": {
+        "crossing_id": "crossing-mica-1",
+        "lead": "risk",
+        "stance": "hold",
+        "basis": "VaR within limit at this notional; no escalation required."
+      }
+    }
+  },
+  {
+    "delay_ms": 150,
+    "envelope": {
+      "seq": 51,
+      "ts": "2026-05-15T10:00:06.180Z",
+      "type": "auditor_finding",
+      "payload": {
+        "crossing_id": "crossing-mica-1",
+        "target": "lead_position",
+        "verdict": "advisory",
+        "basis": "Consider whether satisfy_both is warranted given the UK promotion overlap."
+      }
+    }
   }
 ]

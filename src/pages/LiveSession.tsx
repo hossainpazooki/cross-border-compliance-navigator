@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
-import { SessionHeader, ThresholdFeed, RiskComponentBars } from '@features/live-session/ui';
+import { SessionHeader, ThresholdFeed, RiskComponentBars, OrgPanel } from '@features/live-session/ui';
 import { RiskGauge, StatTile } from '@shared/ui/risk';
 import {
   useSession,
@@ -72,6 +72,8 @@ export function LiveSession() {
           </div>
 
           <RiskComponentBars intentId={intentId} />
+
+          <OrgPanel intentId={intentId} />
 
           {latestSnapshot && (
             <div className="space-y-2">

@@ -28,6 +28,8 @@ function initialSessionState(intent: TradeIntent): SessionState {
     latestSnapshot: null,
     crossings: [],
     rationales: {},
+    leadPositions: {},
+    auditorFindings: {},
     connection: 'connecting',
     lastSeq: 0,
     lastError: null,
@@ -111,6 +113,40 @@ function reduce(state: SessionState, envelope: ServerEnvelope): SessionState {
         },
       };
     }
+    case 'lead_position': {
+      // Wake-on-rationale_verified (Appendix A §A.4): a position is only ever
+      // spent on a grounded draft. The store NEVER surfaces a position for a
+      // crossing whose rationale is not verified (e.g. retracted) — the guard
+      // lives here so replay and live both honor it. Invariant: ≤2 positions
+      // per crossing (one compliance, one risk); a duplicate lead is ignored.
+      const pos = envelope.payload;
+      const rationale = state.rationales[pos.crossing_id];
+      if (rationale?.status !== 'verified') return state;
+      const existing = state.leadPositions[pos.crossing_id] ?? [];
+      if (existing.some((p) => p.lead === pos.lead)) return state;
+      return {
+        ...state,
+        leadPositions: {
+          ...state.leadPositions,
+          [pos.crossing_id]: [...existing, pos],
+        },
+      };
+    }
+    case 'auditor_finding': {
+      // Append-only audit stream, keyed by crossing_id. Both the deterministic
+      // grounding pass (target: 'rationale') and the advisory LLM challenge
+      // (target: 'lead_position') are recorded; advisory findings flag, never
+      // block (the NLI retraction rides its own `rationale_retracted` envelope).
+      const finding = envelope.payload;
+      const existing = state.auditorFindings[finding.crossing_id] ?? [];
+      return {
+        ...state,
+        auditorFindings: {
+          ...state.auditorFindings,
+          [finding.crossing_id]: [...existing, finding],
+        },
+      };
+    }
     case 'error':
       return { ...state, connection: 'error' };
     default:
@@ -189,6 +225,8 @@ export const useSessionStore = create<SessionStoreState>((set, get) => ({
       latestSnapshot: null,
       crossings: [],
       rationales: {},
+      leadPositions: {},
+      auditorFindings: {},
       lastSeq: 0,
       connection: 'open',
       lastError: null,

@@ -164,6 +164,45 @@ function buildMicaThresholdCrossing(): Frame[] {
     },
   }));
 
+  // Agent-org frames emitted AFTER rationale_verified (leads wake on verified):
+  // MICA_ART_5_1 routes to the compliance lead (orchestrator); the risk lead
+  // consumes and adds its position. Then the auditor's advisory challenge.
+  b.emit(200, (seq, ts) => ({
+    seq,
+    ts,
+    type: 'lead_position',
+    payload: {
+      crossing_id: 'crossing-mica-1',
+      lead: 'compliance',
+      stance: 'stricter',
+      basis: 'EU MiCA white-paper obligation is the binding constraint; apply the stricter EU rule.',
+    },
+  }));
+
+  b.emit(120, (seq, ts) => ({
+    seq,
+    ts,
+    type: 'lead_position',
+    payload: {
+      crossing_id: 'crossing-mica-1',
+      lead: 'risk',
+      stance: 'hold',
+      basis: 'VaR within limit at this notional; no escalation required.',
+    },
+  }));
+
+  b.emit(150, (seq, ts) => ({
+    seq,
+    ts,
+    type: 'auditor_finding',
+    payload: {
+      crossing_id: 'crossing-mica-1',
+      target: 'lead_position',
+      verdict: 'advisory',
+      basis: 'Consider whether satisfy_both is warranted given the UK promotion overlap.',
+    },
+  }));
+
   return b.build();
 }
 
@@ -391,6 +430,63 @@ function buildMultiCrossing(): Frame[] {
           final_score: 0.82,
         },
       }));
+
+      // All multi-crossing rules are compliance-type, so the compliance lead
+      // orchestrates each verified crossing. Emitted strictly AFTER verified.
+      b.emit(120, (seq, ts) => ({
+        seq,
+        ts,
+        type: 'lead_position',
+        payload: {
+          crossing_id: `crossing-${c.id}`,
+          lead: 'compliance',
+          stance: 'cumulative',
+          basis: `Synthesized obligation set for ${c.cite}; cumulative across implicated jurisdictions.`,
+        },
+      }));
+
+      // The risk lead consumes and adds a position on the most material
+      // verified crossing (m4 is blocked at the €5M cap).
+      if (c.id === 'm4') {
+        b.emit(80, (seq, ts) => ({
+          seq,
+          ts,
+          type: 'lead_position',
+          payload: {
+            crossing_id: `crossing-${c.id}`,
+            lead: 'risk',
+            stance: 'escalate',
+            basis: 'Blocked verdict at the €5M cap — escalate to board for sign-off.',
+          },
+        }));
+      }
+
+      // Auditor: a deterministic grounding pass on m1, an advisory challenge on m2.
+      if (c.id === 'm1') {
+        b.emit(90, (seq, ts) => ({
+          seq,
+          ts,
+          type: 'auditor_finding',
+          payload: {
+            crossing_id: `crossing-${c.id}`,
+            target: 'rationale',
+            verdict: 'pass',
+            basis: 'All cited sourceRefs present in the evaluateTree trace.',
+          },
+        }));
+      } else if (c.id === 'm2') {
+        b.emit(90, (seq, ts) => ({
+          seq,
+          ts,
+          type: 'auditor_finding',
+          payload: {
+            crossing_id: `crossing-${c.id}`,
+            target: 'lead_position',
+            verdict: 'advisory',
+            basis: 'FCA promotion registration may also implicate Art. 5(2) — flag for board.',
+          },
+        }));
+      }
     } else {
       b.emit(150, (seq, ts) => ({
         seq,

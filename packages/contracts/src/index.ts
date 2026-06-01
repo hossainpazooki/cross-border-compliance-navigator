@@ -10,6 +10,14 @@ export type { TradeSnapshot } from './snapshot';
 export type { ThresholdCrossing } from './crossing';
 export type { Rationale, NLIStatus } from './rationale';
 export type { Verdict } from './verdict';
+export type { ConflictResolution } from './conflict';
+export type {
+  LeadPosition,
+  AuditorFinding,
+  LeadStance,
+  ComplianceStance,
+  RiskStance,
+} from './position';
 export type {
   WSEnvelope,
   ServerEnvelope,
@@ -20,6 +28,8 @@ export type {
   RationaleTokPayload,
   RationaleVerifiedPayload,
   RationaleRetractedPayload,
+  LeadPositionPayload,
+  AuditorFindingPayload,
   RiskUpdatePayload,
   ErrorPayload,
 } from './envelope';
