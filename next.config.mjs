@@ -4,6 +4,9 @@
 //
 // This config takes effect once Phase C1 (Vite → Next 15 migration) lands. Until
 // then `vercel.json` and `vite.config.ts` are the active build configuration.
+// Migration record + full proxied-path table: docs/unified-plan.md (decision 5 — Option A).
+// NOTE: EKS_ALB_HOST below still points at the pre-rename backend ALB; repoint it at the
+// `regulatory-rule-engine` ALB when the migration lands.
 
 const EKS_ALB_HOST =
   process.env.EKS_ALB_HOST ||
