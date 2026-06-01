@@ -1,3 +1,13 @@
+> ⚠️ **ARCHIVED / SUPERSEDED — do not follow this plan.**
+> Phases 0–1 (unify the two apps, feature-sliced restructure) are **complete**. Phases 2–7
+> were **overtaken** by a different direction: the WebSocket live-session + NLI-verified
+> rationale, the `@platform/contracts` + `@platform/mock-ws` monorepo, and the COMPASS rebrand —
+> none of which this document anticipates. It also names the backend `regulatory-ke-workbench`
+> (now **`regulatory-rule-engine`**) and assumes "no tests" / "only MiCA rule", both now false.
+> Kept for historical context only. Current docs: [`README.md`](../../README.md),
+> [`CLAUDE.md`](../../CLAUDE.md), [`docs/unified-plan.md`](../unified-plan.md),
+> [`dev/briefs/live-threshold-rationale-spec.md`](../../dev/briefs/live-threshold-rationale-spec.md).
+
 # Implementation Plan: digital-assets-cross-border
 
 ## Claude Code Prompt
