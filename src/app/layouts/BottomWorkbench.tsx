@@ -12,15 +12,18 @@ import { useCounterfactual } from '@features/counterfactual/model';
 import { Badge, Button, LoadingSpinner, PanelHeader } from '@shared/ui';
 import { WorkbenchArea } from './CanvasLayout';
 import { JURISDICTIONS, JURISDICTION_LIST } from '@entities/jurisdiction/model';
+import { QueueList, HITLReviewPanel } from '@features/hitl-review';
+import type { QueueItem } from '@features/hitl-review/api/hitl';
 import type { ScenarioType } from '@/types/common';
 
-type WorkbenchTab = 'jurisdictions' | 'pathway' | 'conflicts' | 'whatif';
+type WorkbenchTab = 'jurisdictions' | 'pathway' | 'conflicts' | 'whatif' | 'hitl';
 
 const TABS: Array<{ id: WorkbenchTab; label: string }> = [
   { id: 'jurisdictions', label: 'Jurisdictions' },
   { id: 'pathway', label: 'Pathway' },
   { id: 'conflicts', label: 'Conflicts' },
   { id: 'whatif', label: 'What-If' },
+  { id: 'hitl', label: 'HITL Review' },
 ];
 
 const SCENARIO_TYPES: Array<{ type: ScenarioType; label: string; description: string }> = [
@@ -41,6 +44,9 @@ export function BottomWorkbench() {
   // What-If state
   const [selectedScenarioType, setSelectedScenarioType] = useState<ScenarioType | null>(null);
   const [scenarioParams, setScenarioParams] = useState<Record<string, unknown>>({});
+
+  // HITL state
+  const [selectedQueueItem, setSelectedQueueItem] = useState<QueueItem | null>(null);
 
   const isExpanded = panels.workbench === 'expanded';
 
@@ -235,6 +241,31 @@ export function BottomWorkbench() {
                       </div>
                     ))
                   )}
+                </div>
+              )}
+
+              {/* HITL Review Tab */}
+              {activeTab === 'hitl' && (
+                <div className="flex gap-6">
+                  <div className="w-80 shrink-0 overflow-y-auto">
+                    <h4 className="mb-3 text-sm font-medium text-slate-300">Escalated Deals</h4>
+                    <QueueList
+                      selectedId={selectedQueueItem?.app_id}
+                      onSelect={setSelectedQueueItem}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    {selectedQueueItem ? (
+                      <HITLReviewPanel
+                        item={selectedQueueItem}
+                        onComplete={() => setSelectedQueueItem(null)}
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-slate-600 p-6 text-center">
+                        <p className="text-slate-400">Select a deal from the queue to review</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
