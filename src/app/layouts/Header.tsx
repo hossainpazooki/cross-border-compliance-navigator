@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiClient } from '@shared/api';
+import { PRODUCT } from '@shared/config';
 
 export function Header() {
   const [backendStatus, setBackendStatus] = useState<'checking' | 'connected' | 'error'>('checking');
@@ -25,14 +26,14 @@ export function Header() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-violet-500">
-            <span className="text-xl font-bold text-white">CN</span>
+            <span className="text-xl font-bold text-white">{PRODUCT.monogram}</span>
           </div>
           <div>
             <h1 className="text-xl font-semibold text-white">
-              Compliance Navigator
+              {PRODUCT.name}
             </h1>
             <p className="text-sm text-slate-400">
-              Cross-Border DeFi Regulatory Compliance
+              {PRODUCT.shortTagline}
             </p>
           </div>
         </div>

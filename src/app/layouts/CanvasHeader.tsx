@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiClient } from '@shared/api';
+import { PRODUCT } from '@shared/config';
 import { Badge } from '@shared/ui';
 
 export function CanvasHeader() {
@@ -29,11 +30,11 @@ export function CanvasHeader() {
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-violet-500">
-            <span className="text-sm font-bold text-white">CN</span>
+            <span className="text-sm font-bold text-white">{PRODUCT.monogram}</span>
           </div>
           <div>
             <h1 className="text-base font-semibold text-white">
-              Compliance Navigator
+              {PRODUCT.name}
             </h1>
             <p className="text-xs text-slate-400">
               Decision Canvas
