@@ -41,6 +41,5 @@ coverage
 # TypeScript
 *.tsbuildinfo
 
-# Claude
-claude.md
+# Vercel
 .vercel
