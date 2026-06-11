@@ -55,7 +55,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          VITE_API_URL: ${{ vars.VITE_API_URL || 'http://localhost:8000' }}
+          VITE_API_URL: ${{ vars.VITE_API_URL || 'http://localhost:8787' }}
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

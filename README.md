@@ -357,7 +357,7 @@ npm run test:coverage
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `VITE_API_URL` | `http://localhost:8000` | REST base for `regulatory-rule-engine` (navigate, decoder, counterfactual, `/v2/intents`, `/audit`). |
+| `VITE_API_URL` | `http://localhost:8787` (local reference backend) | REST base (navigate, decoder, counterfactual, `/v2/intents`, `/audit`). Set explicitly in production to the deployed `regulatory-rule-engine` origin. |
 | `VITE_WS_URL` | `ws://localhost:8787` (local reference backend) | Live-session WebSocket base; the hook appends `/v2/ws/trade/{intent_id}`. In production, the same host as `VITE_API_URL` as `ws://`. Also honors `NEXT_PUBLIC_WS_BASE_URL` (future Next build). |
 | `VITE_DEBUG` | `false` | Enable debug logging. |
 

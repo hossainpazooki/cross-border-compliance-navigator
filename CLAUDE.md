@@ -53,7 +53,7 @@ src/
 ```
 
 **Path aliases** (`vite.config.ts`): `@app`, `@pages`, `@features`, `@entities`, `@shared`.
-**Import direction:** `app → pages → features → entities → shared`; `shared` imports nothing. (Stale aliases `@api`/`@components`/`@stores`/`@utils`/`@constants` point at dirs that no longer exist — slated for removal.)
+**Import direction:** `app → pages → features → entities → shared`; `shared` imports nothing.
 
 ## Routes
 - `/` — DecisionCanvas (default 3-panel workspace)
@@ -64,7 +64,7 @@ src/
 ## Backend
 The canonical local backend is **`@platform/reference-backend`** (this repo, `tools/reference-backend`) — it implements the full live-session contract and is what `npm run dev:all` boots. The contract source-of-truth lives in `@platform/contracts`; the conformance suite is its executable definition. A production backend is future work (direction: ke-workbench's Gate-5 `ke-cli serve` in the `regulatory-rule-engine` repo, which must pass the same conformance suite). The legacy "FastAPI backend" pointer to `institutional-defi-platform-api` is historical — that repo never implemented `/v2/intents` and is out of the COMPASS dependency graph.
 
-**REST** — base `VITE_API_URL` (default `http://localhost:8000`; the reference backend serves these on :8787 except navigate/decoder/counterfactual, which fall back to in-app demo responses):
+**REST** — base `VITE_API_URL` (default `http://localhost:8787`, the local reference backend; navigate/decoder/counterfactual fall back to in-app demo responses):
 - `POST /navigate` — multi-jurisdiction compliance (demo fallback in-app)
 - `POST /decoder/explain/inline` — AI explanations (demo fallback in-app)
 - `POST /counterfactual/analyze/inline` — what-if analysis (demo fallback in-app)

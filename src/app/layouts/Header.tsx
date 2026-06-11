@@ -5,7 +5,7 @@ import { PRODUCT } from '@shared/config';
 
 export function Header() {
   const [backendStatus, setBackendStatus] = useState<'checking' | 'connected' | 'error'>('checking');
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8787';
 
   useEffect(() => {
     const checkBackend = async () => {

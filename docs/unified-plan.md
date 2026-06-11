@@ -28,7 +28,7 @@ A running record of cross-cutting build/deploy decisions for COMPASS. This captu
 ### Active configuration (today)
 
 Until Phase C1 lands, the build is governed by:
-- `vite.config.ts` — dev server (port 5173), `@`-aliases, `/api` proxy to `http://localhost:8000`.
+- `vite.config.ts` — dev server (port 5173) and `@`-aliases. REST goes direct to `VITE_API_URL` (local default `http://localhost:8787`, the reference backend); there is no dev `/api` proxy.
 - `vercel.json` — `framework: "vite"`, `buildCommand`, SPA rewrite, security headers.
 
 The live-session hook already reads `NEXT_PUBLIC_WS_BASE_URL` as a fallback (`useThresholdStream.ts`) so the WS base resolves under both Vite and a future Next build without code changes.
@@ -39,7 +39,7 @@ The live-session hook already reads `NEXT_PUBLIC_WS_BASE_URL` as a fallback (`us
 - [ ] Switch `vercel.json`/`vercel.ts` `framework` to `nextjs`; activate `next.config.mjs` rewrites.
 - [ ] Verify same-origin WS upgrade works through the edge to the ALB.
 - [ ] Point `EKS_ALB_HOST` at the `regulatory-rule-engine` ALB.
-- [ ] Remove the dev-only CORS proxy from `vite.config.ts`.
+- [x] ~~Remove the dev-only CORS proxy from `vite.config.ts`.~~ Done — the orphaned `/api`→`:8000` proxy was removed when the local default moved to the reference backend on `:8787`.
 
 ---
 
