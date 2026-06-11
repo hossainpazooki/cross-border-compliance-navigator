@@ -1,4 +1,5 @@
-// Evaluator
+// Evaluator + conflicts live in @platform/engine since the engine extraction;
+// re-exported here to preserve the feature's public surface.
 export {
   clearEvaluationCache,
   getEvaluationCacheStats,
@@ -8,12 +9,11 @@ export {
   evaluatePartial,
   collectFactPaths,
   countNodes,
-} from './evaluator';
+  detectConflicts,
+  mergeObligations,
+} from '@platform/engine';
 
-// Conflicts
-export { detectConflicts, mergeObligations } from './conflicts';
-
-// Layout
+// Layout (UI-specific, stays in the app)
 export {
   type LayoutConfig,
   type LayoutNode,

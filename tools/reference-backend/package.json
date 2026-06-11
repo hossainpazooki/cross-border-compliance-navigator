@@ -1,5 +1,5 @@
 {
-  "name": "@platform/mock-ws",
+  "name": "@platform/reference-backend",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@platform/contracts": "*",
+    "@platform/engine": "*",
     "express": "^4.19.2",
     "ws": "^8.16.0"
   },

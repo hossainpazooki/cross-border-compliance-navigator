@@ -1,22 +1,14 @@
-// Jurisdiction codes matching backend JurisdictionCode enum
-export type JurisdictionCode = 'EU' | 'UK' | 'US' | 'CH' | 'SG';
+// Domain primitives owned by @platform/engine; re-exported here so existing
+// `@/types/common` imports keep working.
+import type { JurisdictionCode } from '@platform/engine';
 
-// Jurisdiction roles in cross-border scenarios
-export type JurisdictionRole = 'issuer_home' | 'target' | 'passporting' | 'home' | 'passport' | 'third_country';
-
-// Conflict types
-export type ConflictType =
-  | 'classification_divergence'
-  | 'obligation_conflict'
-  | 'timeline_conflict'
-  | 'decision_conflict'
-  | 'decision'
-  | 'obligation'
-  | 'classification'
-  | 'timeline';
-
-// Conflict severity levels
-export type ConflictSeverity = 'blocking' | 'warning' | 'info';
+export type {
+  JurisdictionCode,
+  JurisdictionRole,
+  ConflictType,
+  ConflictSeverity,
+  ComplianceStatus,
+} from '@platform/engine';
 
 // Explanation tiers from decoder service
 export type ExplanationTier = 'retail' | 'protocol' | 'institutional' | 'regulator';
@@ -36,9 +28,6 @@ export type ScenarioType =
 
 // Risk levels
 export type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-
-// Compliance status
-export type ComplianceStatus = 'compliant' | 'blocked' | 'requires_action' | 'no_applicable_rules';
 
 // Navigation status
 export type NavigationStatus = 'actionable' | 'blocked' | 'requires_review';

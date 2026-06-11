@@ -8,7 +8,11 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
-    include: ['src/**/*.test.{ts,tsx}'],
+    include: [
+      'src/**/*.test.{ts,tsx}',
+      'packages/engine/src/**/*.test.ts',
+      'tools/reference-backend/src/**/*.test.ts',
+    ],
     coverage: {
       reporter: ['text', 'lcov'],
       include: [
@@ -37,6 +41,7 @@ export default defineConfig({
       '@utils': path.resolve(__dirname, './src/utils'),
       '@constants': path.resolve(__dirname, './src/constants'),
       '@platform/contracts': path.resolve(__dirname, './packages/contracts/src/index.ts'),
+      '@platform/engine': path.resolve(__dirname, './packages/engine/src/index.ts'),
     },
   },
 });

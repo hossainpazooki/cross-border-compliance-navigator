@@ -1,11 +1,16 @@
-import type { JurisdictionCode, ConflictType, ConflictSeverity } from '@/types/common';
-import type { RuleConflict } from '@/types/navigate';
-import type { EvaluationResult, RuleDefinition } from '@/types/decisionTree';
+import type {
+  JurisdictionCode,
+  ConflictType,
+  ConflictSeverity,
+  RuleConflict,
+  EvaluationResult,
+  RuleDefinition,
+} from './types';
 
 /**
  * Represents an evaluated rule with its result
  */
-interface EvaluatedRule {
+export interface EvaluatedRule {
   definition: RuleDefinition;
   result: EvaluationResult;
 }

@@ -4,7 +4,7 @@ import { defineConfig, devices } from '@playwright/test';
  * Playwright config for the cross-border app.
  *
  * Targets:
- *   1. Local dev — `npm run dev:all` (Vite + mock-ws on :8787).
+ *   1. Local dev — `npm run dev:all` (Vite + reference backend on :8787).
  *   2. Vercel preview deploys — URL injected via `PLAYWRIGHT_BASE_URL` env var
  *      from the CI workflow (see .github/workflows/playwright-preview.yml).
  */

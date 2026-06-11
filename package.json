@@ -9,16 +9,17 @@
   ],
   "scripts": {
     "dev": "vite",
-    "dev:all": "concurrently -n web,mock-ws -c blue,magenta \"npm:dev\" \"npm:mock-ws\"",
-    "mock-ws": "npm --workspace @platform/mock-ws run start",
-    "build-fixtures": "npm --workspace @platform/mock-ws exec tsx src/build-fixtures.ts",
+    "dev:all": "concurrently -n web,backend -c blue,magenta \"npm:dev\" \"npm:backend\"",
+    "backend": "npm --workspace @platform/reference-backend run start",
+    "mock-ws": "npm run backend",
+    "build-fixtures": "npm --workspace @platform/reference-backend exec tsx src/build-fixtures.ts",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "typecheck": "tsc --noEmit && npm --workspace @platform/contracts run typecheck && npm --workspace @platform/mock-ws run typecheck"
+    "typecheck": "tsc --noEmit && npm --workspace @platform/contracts run typecheck && npm --workspace @platform/engine run typecheck && npm --workspace @platform/reference-backend run typecheck"
   },
   "dependencies": {
     "@platform/contracts": "*",

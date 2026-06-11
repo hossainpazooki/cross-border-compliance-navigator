@@ -6,8 +6,8 @@ import type {
   TraceNode,
   EvaluationResult,
   PartialEvaluationResult,
-} from '@/types/decisionTree';
-import { isLeafNode } from '@/types/decisionTree';
+} from './types';
+import { isLeafNode } from './types';
 
 // ============================================================================
 // Evaluation Cache (Droit pattern: TMS-like efficiency for incremental updates)
@@ -23,10 +23,25 @@ const evaluationCache = new Map<string, EvaluationCache>();
 
 /**
  * Create a stable hash of facts for cache key comparison.
- * Uses JSON.stringify for simplicity; could be optimized with a proper hash function.
+ * Sorts keys recursively so key insertion order never affects the hash.
+ * (A JSON.stringify replacer array is NOT usable here — it filters keys at
+ * every nesting level, which collapsed all nested facts to `{}` and made the
+ * cache return stale results when only nested values changed.)
  */
 function hashFacts(facts: Facts): string {
-  return JSON.stringify(facts, Object.keys(facts).sort());
+  const stable = (value: unknown): unknown => {
+    if (Array.isArray(value)) return value.map(stable);
+    if (value && typeof value === 'object') {
+      const record = value as Record<string, unknown>;
+      return Object.fromEntries(
+        Object.keys(record)
+          .sort()
+          .map((key) => [key, stable(record[key])])
+      );
+    }
+    return value;
+  };
+  return JSON.stringify(stable(facts));
 }
 
 /**

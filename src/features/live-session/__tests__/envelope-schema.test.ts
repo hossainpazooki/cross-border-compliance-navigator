@@ -6,7 +6,7 @@ import { isWSEnvelope } from '@platform/contracts';
 const FIXTURES = ['mica-threshold-crossing', 'retraction', 'multi-crossing'] as const;
 
 async function loadFixture(name: string) {
-  const file = path.resolve(__dirname, '..', '..', '..', '..', 'tools', 'mock-ws', 'fixtures', `${name}.json`);
+  const file = path.resolve(__dirname, '..', '..', '..', '..', 'tools', 'reference-backend', 'fixtures', `${name}.json`);
   return JSON.parse(await readFile(file, 'utf-8')) as Array<{ delay_ms: number; envelope: unknown }>;
 }
 

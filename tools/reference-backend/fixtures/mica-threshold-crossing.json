@@ -70,9 +70,9 @@
       "type": "compliance",
       "payload": {
         "crossing_id": "crossing-mica-1",
-        "prior_verdict": "compliant",
+        "prior_verdict": "conditional",
         "new_verdict": "conditional",
-        "citation": "MiCA Art. 5(1)"
+        "citation": "MiCA Art. 43(1)"
       }
     }
   },
@@ -86,9 +86,9 @@
         "crossing_id": "crossing-mica-1",
         "intent_id": "fixture-intent",
         "ts": "2026-05-15T10:00:02.050Z",
-        "rule_id": "MICA_ART_5_1",
-        "citation": "MiCA Art. 5(1)",
-        "boundary": "1000000",
+        "rule_id": "mica-stablecoin-auth",
+        "citation": "MiCA Art. 43(1)",
+        "boundary": "5000000000",
         "direction": "crossed_up",
         "snapshot": {
           "intent_id": "fixture-intent",
@@ -103,7 +103,7 @@
           "var_95_usd": 61477.709979988365,
           "funding_rate": 0.0001
         },
-        "prior_verdict": "compliant",
+        "prior_verdict": "conditional",
         "new_verdict": "conditional"
       }
     }
@@ -117,7 +117,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "Trade "
+        "token": "Issuer "
       }
     }
   },
@@ -130,7 +130,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "notional "
+        "token": "reserve "
       }
     }
   },
@@ -143,7 +143,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "of "
+        "token": "assets "
       }
     }
   },
@@ -156,7 +156,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "€1.05M "
+        "token": "now "
       }
     }
   },
@@ -169,7 +169,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "exceeds "
+        "token": "exceed "
       }
     }
   },
@@ -182,7 +182,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "MiCA "
+        "token": "the "
       }
     }
   },
@@ -195,7 +195,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "Article "
+        "token": "EUR "
       }
     }
   },
@@ -208,7 +208,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "5(1) "
+        "token": "5B "
       }
     }
   },
@@ -221,7 +221,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "reserve-asset "
+        "token": "significance "
       }
     }
   },
@@ -247,7 +247,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "of "
+        "token": "(MiCA "
       }
     }
   },
@@ -260,7 +260,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "€1M "
+        "token": "Art. "
       }
     }
   },
@@ -273,7 +273,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "for "
+        "token": "43(1)). "
       }
     }
   },
@@ -286,7 +286,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "stablecoin "
+        "token": "The "
       }
     }
   },
@@ -299,7 +299,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "offerings "
+        "token": "e-money "
       }
     }
   },
@@ -312,7 +312,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "to "
+        "token": "token "
       }
     }
   },
@@ -325,7 +325,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "the "
+        "token": "is "
       }
     }
   },
@@ -338,7 +338,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "public "
+        "token": "reclassified "
       }
     }
   },
@@ -351,7 +351,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "in "
+        "token": "from "
       }
     }
   },
@@ -364,7 +364,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "the "
+        "token": "\"EMT "
       }
     }
   },
@@ -377,7 +377,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "European "
+        "token": "by "
       }
     }
   },
@@ -390,7 +390,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "Union. "
+        "token": "authorized "
       }
     }
   },
@@ -403,7 +403,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "The "
+        "token": "institution: "
       }
     }
   },
@@ -416,7 +416,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "issuer "
+        "token": "Notification "
       }
     }
   },
@@ -429,7 +429,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "must "
+        "token": "and "
       }
     }
   },
@@ -442,7 +442,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "publish "
+        "token": "whitepaper "
       }
     }
   },
@@ -455,7 +455,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "a "
+        "token": "required\" "
       }
     }
   },
@@ -468,7 +468,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "crypto-asset "
+        "token": "to "
       }
     }
   },
@@ -481,7 +481,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "white "
+        "token": "\"Significant "
       }
     }
   },
@@ -494,7 +494,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "paper "
+        "token": "EMT: "
       }
     }
   },
@@ -507,7 +507,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "and "
+        "token": "Subject "
       }
     }
   },
@@ -520,7 +520,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "notify "
+        "token": "to "
       }
     }
   },
@@ -533,7 +533,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "the "
+        "token": "enhanced "
       }
     }
   },
@@ -546,7 +546,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "competent "
+        "token": "authorization "
       }
     }
   },
@@ -559,7 +559,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "authority "
+        "token": "and "
       }
     }
   },
@@ -572,7 +572,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "before "
+        "token": "EBA "
       }
     }
   },
@@ -585,7 +585,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "any "
+        "token": "supervision\" "
       }
     }
   },
@@ -598,7 +598,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "further "
+        "token": "(MiCA "
       }
     }
   },
@@ -611,7 +611,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "offering "
+        "token": "Art. "
       }
     }
   },
@@ -624,7 +624,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "above "
+        "token": "43-45). "
       }
     }
   },
@@ -637,7 +637,7 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "this "
+        "token": "The "
       }
     }
   },
@@ -650,15 +650,119 @@
       "payload": {
         "rationale_id": "rationale-mica-1",
         "crossing_id": "crossing-mica-1",
-        "token": "size."
+        "token": "obligation "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 48,
+      "ts": "2026-05-15T10:00:05.490Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "set "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 49,
+      "ts": "2026-05-15T10:00:05.570Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "escalates "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 50,
+      "ts": "2026-05-15T10:00:05.650Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "to: "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 51,
+      "ts": "2026-05-15T10:00:05.730Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "eba-authorization, "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 52,
+      "ts": "2026-05-15T10:00:05.810Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "reserve-requirements-enhanced, "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 53,
+      "ts": "2026-05-15T10:00:05.890Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "quarterly-reporting-eba, "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 54,
+      "ts": "2026-05-15T10:00:05.970Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "recovery-plan, "
+      }
+    }
+  },
+  {
+    "delay_ms": 80,
+    "envelope": {
+      "seq": 55,
+      "ts": "2026-05-15T10:00:06.050Z",
+      "type": "rationale_tok",
+      "payload": {
+        "rationale_id": "rationale-mica-1",
+        "crossing_id": "crossing-mica-1",
+        "token": "redemption-plan."
       }
     }
   },
   {
     "delay_ms": 300,
     "envelope": {
-      "seq": 48,
-      "ts": "2026-05-15T10:00:05.710Z",
+      "seq": 56,
+      "ts": "2026-05-15T10:00:06.350Z",
       "type": "rationale_verified",
       "payload": {
         "rationale_id": "rationale-mica-1",
@@ -670,42 +774,56 @@
   {
     "delay_ms": 200,
     "envelope": {
-      "seq": 49,
-      "ts": "2026-05-15T10:00:05.910Z",
+      "seq": 57,
+      "ts": "2026-05-15T10:00:06.550Z",
       "type": "lead_position",
       "payload": {
         "crossing_id": "crossing-mica-1",
         "lead": "compliance",
-        "stance": "stricter",
-        "basis": "EU MiCA white-paper obligation is the binding constraint; apply the stricter EU rule."
+        "stance": "cumulative",
+        "basis": "Obligations escalate under MiCA Art. 43-45: eba-authorization, reserve-requirements-enhanced, quarterly-reporting-eba, recovery-plan, redemption-plan."
       }
     }
   },
   {
     "delay_ms": 120,
     "envelope": {
-      "seq": 50,
-      "ts": "2026-05-15T10:00:06.030Z",
+      "seq": 58,
+      "ts": "2026-05-15T10:00:06.670Z",
       "type": "lead_position",
       "payload": {
         "crossing_id": "crossing-mica-1",
         "lead": "risk",
         "stance": "hold",
-        "basis": "VaR within limit at this notional; no escalation required."
+        "basis": "VaR $61,478 within limit at this notional; no escalation required."
       }
     }
   },
   {
     "delay_ms": 150,
     "envelope": {
-      "seq": 51,
-      "ts": "2026-05-15T10:00:06.180Z",
+      "seq": 59,
+      "ts": "2026-05-15T10:00:06.820Z",
+      "type": "auditor_finding",
+      "payload": {
+        "crossing_id": "crossing-mica-1",
+        "target": "rationale",
+        "verdict": "pass",
+        "basis": "All cited references (MiCA Art. 43(1); MiCA Art. 43-45) present in the evaluateTree trace."
+      }
+    }
+  },
+  {
+    "delay_ms": 100,
+    "envelope": {
+      "seq": 60,
+      "ts": "2026-05-15T10:00:06.920Z",
       "type": "auditor_finding",
       "payload": {
         "crossing_id": "crossing-mica-1",
         "target": "lead_position",
         "verdict": "advisory",
-        "basis": "Consider whether satisfy_both is warranted given the UK promotion overlap."
+        "basis": "EBA supervision transfer may also implicate the recovery-plan timeline; flag for board."
       }
     }
   }

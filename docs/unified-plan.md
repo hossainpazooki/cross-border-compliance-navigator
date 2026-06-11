@@ -2,7 +2,7 @@
 
 A running record of cross-cutting build/deploy decisions for COMPASS. This captures what is **actually decided and visible in-repo**; open items are marked TBD rather than invented.
 
-> Scope note: the Vite → Next 15 migration below is a **deferred roadmap item**, not the next upgrade in flight. It is documented here because `next.config.mjs` references it ("Phase C1", "decision 5 — Option A") and that file would otherwise be an unexplained, inert config.
+> Scope note: the Vite → Next 15 migration is now **actively planned** (see [Phase C1 — migration plan](#phase-c1--vite--next-15-migration-plan) below). The app remains on Vite today; the plan is staged so the cutover ships in low-risk increments. `next.config.mjs` is the pre-written, currently-inert target config for this work.
 
 ---
 

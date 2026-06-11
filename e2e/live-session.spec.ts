@@ -11,7 +11,7 @@ import AxeBuilder from '@axe-core/playwright';
  * content-bearing tests drive the real form flow via {@link createLiveSession}.
  *
  * Run locally:
- *   VITE_API_URL=http://localhost:8787 npm run dev:all   # REST + WS on mock-ws
+ *   VITE_API_URL=http://localhost:8787 npm run dev:all   # REST + WS on the reference backend
  *   npx playwright test
  *
  * Run against Vercel preview (needs a reachable REST origin for POST /v2/intents):
@@ -22,7 +22,7 @@ const TEST_INTENT_ID = '00000000-0000-0000-0000-000000000001';
 
 /**
  * Drive the intent form to open a real session and land on `/live/:intentId`.
- * Defaults target the EU jurisdiction, which routes the mock-ws replay to the
+ * Defaults target the EU jurisdiction, which routes the reference-backend replay to the
  * `mica-threshold-crossing` fixture (threshold → verified rationale → lead
  * positions → advisory auditor finding). Returns the new intent id.
  */
@@ -49,7 +49,7 @@ test('websocket connects within 10s after going live', async ({ page }) => {
   expect(ws.url()).toMatch(/(\/v2\/ws\/trade\/|intent_id=)/);
 });
 
-test('threshold card appears within 30s from mock-ws replay', async ({ page }) => {
+test('threshold card appears within 30s from reference-backend replay', async ({ page }) => {
   await createLiveSession(page);
   await expect(
     page.locator('[data-testid="threshold-card"], article').first()

@@ -1,8 +1,6 @@
 import type {
   JurisdictionCode,
   JurisdictionRole,
-  ConflictType,
-  ConflictSeverity,
   ComplianceStatus,
   NavigationStatus,
   PathwayStepStatus,
@@ -10,6 +8,11 @@ import type {
   ActivityType,
   InvestorType,
 } from './common';
+import type { SourceReference, RuleConflict } from '@platform/engine';
+
+// Owned by @platform/engine; re-exported here so existing `@/types/navigate`
+// imports keep working.
+export type { SourceReference, RuleConflict };
 
 // Request to /navigate endpoint
 export interface NavigateRequest {
@@ -34,14 +37,6 @@ export interface TraceStep {
   condition: string;
   result: boolean;
   explanation?: string;
-}
-
-// Source reference for regulatory citation
-export interface SourceReference {
-  document_id: string;
-  article?: string;
-  paragraph?: string;
-  url?: string;
 }
 
 // Decision from rule evaluation
@@ -71,19 +66,6 @@ export interface JurisdictionResult {
   rules_evaluated: number;
   decisions: Decision[];
   obligations: Obligation[];
-}
-
-// Conflict between jurisdictions
-export interface RuleConflict {
-  id: string;
-  type: ConflictType;
-  severity: ConflictSeverity;
-  jurisdictions: JurisdictionCode[];
-  description: string;
-  resolution_strategy: 'cumulative' | 'stricter' | 'home_jurisdiction' | 'satisfy_both' | 'earliest';
-  resolution_note?: string;
-  obligations?: string[];
-  anchor_node_ids?: string[]; // Tree nodes involved in this conflict (Phase 6)
 }
 
 // Timeline for pathway step

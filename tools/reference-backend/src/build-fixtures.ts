@@ -6,6 +6,12 @@ import type {
   TradeSnapshot,
   WSEnvelope,
 } from '@platform/contracts';
+import {
+  evaluateAtReserve,
+  findReserveBoundary,
+  formatCitation,
+  isGrounded,
+} from './scenario.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = path.resolve(__dirname, '..', 'fixtures');
@@ -84,11 +90,43 @@ function tokenize(text: string): string[] {
   return text.match(/\S+\s*|\s+/g) ?? [text];
 }
 
+/**
+ * Engine-driven scenario: an EMT issuer's reserve assets grow through the
+ * significant-EMT boundary that the real MiCA rule tree encodes. Verdicts,
+ * citations, and obligations all come from `evaluateTree` over
+ * `@platform/engine`'s bundled rule data — and the build FAILS if a cited
+ * reference is not grounded in the actual evaluation trace (the same check
+ * the auditor's deterministic pass performs at runtime).
+ */
 function buildMicaThresholdCrossing(): Frame[] {
   const b = new Builder();
 
+  const boundary = findReserveBoundary();
+  const prior = evaluateAtReserve(boundary.value - 250_000);
+  const next = evaluateAtReserve(boundary.value + 750_000);
+
+  if (prior.result.leaf.nodeId === next.result.leaf.nodeId) {
+    throw new Error('scenario does not cross a leaf boundary; fixture would be meaningless');
+  }
+
+  const boundaryCitation = formatCitation(boundary.sourceRef);
+  for (const [label, citation, evaluation] of [
+    ['boundary', boundaryCitation, next],
+    ['leaf', next.citation, next],
+  ] as const) {
+    if (!isGrounded(citation, evaluation.result)) {
+      throw new Error(`${label} citation "${citation}" is not grounded in the evaluation trace`);
+    }
+  }
+
+  // Reserve approaches the boundary; each tick is a ~€1M trade adding to it.
+  const reserves = [
+    boundary.value - 1_500_000,
+    boundary.value - 900_000,
+    boundary.value - 250_000,
+  ];
   let price = 3500;
-  for (let i = 0; i < 3; i++) {
+  reserves.forEach((_, i) => {
     price += 10;
     b.emit(500, (seq, ts) => ({
       seq,
@@ -96,7 +134,7 @@ function buildMicaThresholdCrossing(): Frame[] {
       type: 'tick',
       payload: snapshot(ts, price, 0.65, 4.5, 950_000 + i * 25_000),
     }));
-  }
+  });
 
   const crossingSnap = snapshot(
     new Date(START_TS + 2_500).toISOString(),
@@ -112,9 +150,9 @@ function buildMicaThresholdCrossing(): Frame[] {
     type: 'compliance',
     payload: {
       crossing_id: 'crossing-mica-1',
-      prior_verdict: 'compliant',
-      new_verdict: 'conditional',
-      citation: 'MiCA Art. 5(1)',
+      prior_verdict: prior.verdict,
+      new_verdict: next.verdict,
+      citation: boundaryCitation,
     },
   }));
 
@@ -126,20 +164,24 @@ function buildMicaThresholdCrossing(): Frame[] {
       'crossing-mica-1',
       ts,
       crossingSnap,
-      1_000_000,
+      boundary.value,
       'crossed_up',
-      'MICA_ART_5_1',
-      'MiCA Art. 5(1)',
-      'compliant',
-      'conditional'
+      boundary.ruleId,
+      boundaryCitation,
+      prior.verdict,
+      next.verdict
     ),
   }));
 
+  const escalated = next.obligations.filter((o) => !prior.obligations.includes(o));
   const rationale =
-    'Trade notional of €1.05M exceeds MiCA Article 5(1) reserve-asset threshold of €1M for stablecoin offerings to the public in the European Union. The issuer must publish a crypto-asset white paper and notify the competent authority before any further offering above this size.';
+    `Issuer reserve assets now exceed the EUR ${(boundary.value / 1e9).toFixed(0)}B ` +
+    `significance threshold (${boundaryCitation}). The e-money token is reclassified ` +
+    `from "${prior.result.leaf.decision}" to "${next.result.leaf.decision}" (${next.citation}). ` +
+    `The obligation set escalates to: ${escalated.join(', ')}.`;
 
   const tokens = tokenize(rationale);
-  tokens.forEach((tok, i) => {
+  tokens.forEach((tok) => {
     b.emit(80, (seq, ts) => ({
       seq,
       ts,
@@ -150,9 +192,10 @@ function buildMicaThresholdCrossing(): Frame[] {
         token: tok,
       },
     }));
-    void i;
   });
 
+  // NLI scoring stays canned in the reference backend; the grounding gate
+  // above is the deterministic part and it actually ran.
   b.emit(300, (seq, ts) => ({
     seq,
     ts,
@@ -165,8 +208,8 @@ function buildMicaThresholdCrossing(): Frame[] {
   }));
 
   // Agent-org frames emitted AFTER rationale_verified (leads wake on verified):
-  // MICA_ART_5_1 routes to the compliance lead (orchestrator); the risk lead
-  // consumes and adds its position. Then the auditor's advisory challenge.
+  // the compliance lead orchestrates; the risk lead consumes and adds its
+  // position. Then the auditor's findings.
   b.emit(200, (seq, ts) => ({
     seq,
     ts,
@@ -174,8 +217,8 @@ function buildMicaThresholdCrossing(): Frame[] {
     payload: {
       crossing_id: 'crossing-mica-1',
       lead: 'compliance',
-      stance: 'stricter',
-      basis: 'EU MiCA white-paper obligation is the binding constraint; apply the stricter EU rule.',
+      stance: 'cumulative',
+      basis: `Obligations escalate under ${next.citation}: ${escalated.join(', ')}.`,
     },
   }));
 
@@ -187,7 +230,7 @@ function buildMicaThresholdCrossing(): Frame[] {
       crossing_id: 'crossing-mica-1',
       lead: 'risk',
       stance: 'hold',
-      basis: 'VaR within limit at this notional; no escalation required.',
+      basis: `VaR $${Math.round(crossingSnap.var_95_usd).toLocaleString('en-US')} within limit at this notional; no escalation required.`,
     },
   }));
 
@@ -197,9 +240,21 @@ function buildMicaThresholdCrossing(): Frame[] {
     type: 'auditor_finding',
     payload: {
       crossing_id: 'crossing-mica-1',
+      target: 'rationale',
+      verdict: 'pass',
+      basis: `All cited references (${boundaryCitation}; ${next.citation}) present in the evaluateTree trace.`,
+    },
+  }));
+
+  b.emit(100, (seq, ts) => ({
+    seq,
+    ts,
+    type: 'auditor_finding',
+    payload: {
+      crossing_id: 'crossing-mica-1',
       target: 'lead_position',
       verdict: 'advisory',
-      basis: 'Consider whether satisfy_both is warranted given the UK promotion overlap.',
+      basis: 'EBA supervision transfer may also implicate the recovery-plan timeline; flag for board.',
     },
   }));
 

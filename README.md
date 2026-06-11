@@ -4,7 +4,7 @@
 
 A real-time navigator for cross-border digital-asset compliance that streams threshold-crossing risk indicators with NLI-verified rationale — across EU (MiCA), UK, US, Switzerland, and Singapore. The live session is now coordinated by a small **org of specialist agents** (a Paperclip-style org chart) **while the deterministic engine and NLI gate remain ground truth**.
 
-**[Live Demo](https://cross-border-compliance-navigator-sepia.vercel.app/)** · [Backend: regulatory-rule-engine](https://github.com/hossainpazooki/regulatory-rule-engine) · [Streaming contract](packages/contracts/README.md)
+**[Live Demo](https://cross-border-compliance-navigator-sepia.vercel.app/)** · [Streaming contract](packages/contracts/README.md) · local deployment: `npm run dev:all` (self-contained — see [Quick start](#quick-start))
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)
 ![React](https://img.shields.io/badge/React-18.2-61dafb)
@@ -161,9 +161,9 @@ Both new artifacts ride the **existing WS envelope union** as two new `type`s (`
 | Selectors: per-crossing positions/findings + session-wide advisory feed | ✅ `live-session/selectors.ts` |
 | "Org" panel — draft + ≤2 lead positions + findings, retraction vs. flag distinct | ✅ `ui/OrgPanel.tsx` (tested), wired into `LiveSession.tsx` |
 | Session-wide advisory-flag queue (sibling to the retracted-rationale queue) | ✅ `ui/AdvisoryFlagQueue.tsx` |
-| Backend agent runtime (specialist/lead/auditor LLM agents) | 🔶 planned in `regulatory-rule-engine`; frontend coordinates, runtime lives backend-side |
+| Backend agent runtime (specialist/lead/auditor LLM agents) | 🔶 future backend work; frontend coordinates, runtime lives backend-side (see Roadmap) |
 
-> **Honest status.** The frontend coordination layer — routing, contracts, envelope guards, the store invariants, replay, selectors, and the Org/advisory UI — is **implemented and covered by tests** (`OrgPanel.test.tsx`, `envelope-guards.test.ts`, and the agent-org additions to `store.test.ts`). The LLM agent *runtime* (specialists, leads, auditor) is backend work in `regulatory-rule-engine`; COMPASS consumes its `lead_position` / `auditor_finding` envelopes over the existing contract. The `mock-ws` fixture server emits the new envelope types so the Org panel runs end-to-end without a real backend.
+> **Honest status.** The frontend coordination layer — routing, contracts, envelope guards, the store invariants, replay, selectors, and the Org/advisory UI — is **implemented and covered by tests** (`OrgPanel.test.tsx`, `envelope-guards.test.ts`, and the agent-org additions to `store.test.ts`). The LLM agent *runtime* (specialists, leads, auditor) is future backend work; COMPASS consumes its `lead_position` / `auditor_finding` envelopes over the existing contract. The reference backend emits the full envelope union so the Org panel runs end-to-end locally, with citations grounded in real `evaluateTree` traces.
 
 ---
 
@@ -180,16 +180,16 @@ Both new artifacts ride the **existing WS envelope union** as two new `type`s (`
                                                │   │                    │ types
                           WebSocket            │   │ REST               │
                                                ▼   ▼                    ▼
-┌────────────────── regulatory-rule-engine (FastAPI) ──────────────┐   ┌── tools/mock-ws ──┐
-│  REST:  /navigate · /decoder · /counterfactual · /v2/intents     │   │  local fixture     │
-│         /audit                                                    │   │  server (emits the │
-│  WS:    /v2/ws/trade/:intentId                                    │   │  full envelope     │
-│  Agents: specialists → leads → auditor   (planned runtime)        │   │  union, incl. org  │
-│  NLI gate → rationale_verified | rationale_retracted              │   │  types)            │
-└──────────────────────────────────────────────────────────────────┘   └────────────────────┘
+┌──────── tools/reference-backend (the local deployment) ──────────┐   ┌── future backend ──┐
+│  REST:  /v2/intents · /audit/:id · /health                        │   │  ke-workbench      │
+│  WS:    /v2/ws/trade/:intentId — full envelope union, incl.       │   │  Gate-5 serve      │
+│         lead_position / auditor_finding (org types)               │   │  (Rust); gated on  │
+│  Fixtures derived through @platform/engine (grounding-gated)      │   │  passing the       │
+│  NLI gate → rationale_verified | rationale_retracted (scripted)   │   │  conformance suite │
+└───────────────────────────────────────────────────────────────────┘   └────────────────────┘
 ```
 
-The shared **`@platform/contracts`** package is the single source of truth for both the REST and WebSocket message shapes, consumed by the app and by a local `mock-ws` fixture server so the live session — and the agent org — run without a real backend.
+The shared **`@platform/contracts`** package is the single source of truth for both the REST and WebSocket message shapes, consumed by the app and by the **`@platform/reference-backend`** server so the live session — and the agent org — run as a fully local deployment. **`@platform/engine`** owns the decision-tree evaluator and rule data, shared by the app (client-side evaluation) and the backend (fixture grounding).
 
 ---
 
@@ -222,7 +222,8 @@ npm workspaces — `packages/*` and `tools/*`:
 |---|---|---|
 | `compass` | `/` | The React SPA (this app). |
 | `@platform/contracts` | `packages/contracts` | Shared TypeScript types + guards for the REST + WS protocol. |
-| `@platform/mock-ws` | `tools/mock-ws` | Local WebSocket fixture server for the live session. |
+| `@platform/engine` | `packages/engine` | The decision engine (`evaluateTree`, `detectConflicts`), decision-tree types, and bundled rule data. Unit-tested. |
+| `@platform/reference-backend` | `tools/reference-backend` | Reference implementation of the REST + WS contract (formerly `mock-ws`); drives the local deployment. Its conformance suite is the executable contract. |
 
 ### Project structure (feature-sliced design)
 
@@ -270,10 +271,10 @@ npm install
 
 npm run dev        # web only, on http://localhost:5173
 # — or —
-npm run dev:all    # web + local mock-ws server together (drives the agent-org UI)
+npm run dev:all    # THE local deployment: web + reference backend together
 ```
 
-Opens on [localhost:5173](http://localhost:5173). **Works in demo mode without a backend** — REST features fall back to bundled demo responses, and the live session (with the Org panel) runs against the local `mock-ws` server, which emits the full envelope union including `lead_position` and `auditor_finding`. Point `VITE_API_URL` / `VITE_WS_URL` at a real backend when available.
+Opens on [localhost:5173](http://localhost:5173). **The monorepo is its own deployment** — no external services: REST analysis features fall back to bundled demo responses (or run client-side via `@platform/engine`), and the live session (with the Org panel) runs against the local reference backend, which implements the full contract — intent lifecycle, audit replay, and the complete envelope union including `lead_position` and `auditor_finding`. Its fixtures are derived through the real engine, so streamed citations are grounded in actual `evaluateTree` traces. Point `VITE_API_URL` / `VITE_WS_URL` at a remote backend only when one exists — it must pass the conformance suite first.
 
 ---
 
@@ -320,9 +321,10 @@ The `trace`'s `sourceRef`s are exactly what the auditor's deterministic groundin
 | Script | Description |
 |--------|-------------|
 | `npm run dev` | Vite dev server (port 5173) |
-| `npm run dev:all` | Web + `mock-ws` concurrently |
-| `npm run mock-ws` | Local WebSocket fixture server only |
-| `npm run build-fixtures` | Regenerate mock-ws fixtures |
+| `npm run dev:all` | Local deployment: web + reference backend concurrently |
+| `npm run backend` | Reference backend only (REST + WS on :8787) |
+| `npm run mock-ws` | Deprecated alias for `npm run backend` |
+| `npm run build-fixtures` | Regenerate fixtures through `@platform/engine` (grounding-gated) |
 | `npm run build` | Production build (`tsc && vite build`) |
 | `npm run preview` | Preview the production build |
 | `npm run lint` | ESLint (zero warnings) |
@@ -335,6 +337,8 @@ The `trace`'s `sourceRef`s are exactly what the auditor's deterministic groundin
 
 ## Testing
 
+- **Engine unit tests** — `packages/engine/src/__tests__/` (`evaluator.test.ts`, `conflicts.test.ts`): operators, tracing, the fact-hash cache, partial evaluation, conflict detection.
+- **Contract conformance** — `tools/reference-backend/src/__tests__/conformance.test.ts`: boots the reference backend on an ephemeral port and asserts the executable contract (intent lifecycle, audit replay validity, envelope stream guards + monotonic `seq`, text-frame heartbeat, stream ≡ replay). Any future real backend must pass it.
 - **Unit / component** — Vitest + Testing Library, under `src/features/live-session/__tests__/`:
   - `store.test.ts` — reducer, sequence-gap detection, replay, and the **agent-org invariants** (routing, wake-on-verified, ≤2 lead positions, replay reconstruction).
   - `envelope-guards.test.ts` — `isWSEnvelope` / `isMessageType` coverage for `lead_position` + `auditor_finding`, including cross-typed-stance rejection.
@@ -354,14 +358,14 @@ npm run test:coverage
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `VITE_API_URL` | `http://localhost:8000` | REST base for `regulatory-rule-engine` (navigate, decoder, counterfactual, `/v2/intents`, `/audit`). |
-| `VITE_WS_URL` | `ws://localhost:8787` (local `mock-ws`) | Live-session WebSocket base; the hook appends `/v2/ws/trade/{intent_id}`. In production, the same host as `VITE_API_URL` as `ws://`. Also honors `NEXT_PUBLIC_WS_BASE_URL` (future Next build). |
+| `VITE_WS_URL` | `ws://localhost:8787` (local reference backend) | Live-session WebSocket base; the hook appends `/v2/ws/trade/{intent_id}`. In production, the same host as `VITE_API_URL` as `ws://`. Also honors `NEXT_PUBLIC_WS_BASE_URL` (future Next build). |
 | `VITE_DEBUG` | `false` | Enable debug logging. |
 
 ---
 
 ## Roadmap
 
-- **Backend agent runtime.** The specialist / lead / auditor LLM agents land in `regulatory-rule-engine` (`src/agents/`), mirroring `orchestratorRouting.ts`'s `rule_id` table so frontend routing and backend tasking never diverge. COMPASS already consumes their `lead_position` / `auditor_finding` envelopes.
+- **Backend agent runtime.** The specialist / lead / auditor LLM agents are future backend work, mirroring `orchestratorRouting.ts`'s `rule_id` table so frontend routing and backend tasking never diverge. COMPASS already consumes their `lead_position` / `auditor_finding` envelopes; the reference backend emits engine-grounded examples today. The strategic production host is ke-workbench's Gate-5 `ke-cli serve` (the `regulatory-rule-engine` repo, now a Rust workspace) — whatever serves it must pass the conformance suite in `tools/reference-backend/src/__tests__/`.
 - **`rule_id` classification table.** Pin the concrete compliance-vs-risk `rule_id`s (the `RISK_` namespace is reserved; the explicit compliance ids are seeded from fixtures).
 - **Next 15 migration (Phase C1).** The current build is **Vite** (`vite.config.ts` + `vercel.json`, `framework: "vite"`); a `next.config.mjs` is checked in but **inert** (no `next` dependency yet). It activates at the cutover, when Vercel edge rewrites proxy `/v2/ws`, `/v2`, `/api`, `/audit`, `/decide`, and `/credit` **same-origin** to the backend (EKS ALB), removing the CORS hop. This README is structured to absorb that migration without a rewrite. See [`docs/unified-plan.md`](docs/unified-plan.md).
 
