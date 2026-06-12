@@ -1,22 +1,24 @@
-import { readFile } from 'node:fs/promises';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import type { WSEnvelope } from '@platform/contracts';
 import { isWSEnvelope } from '@platform/contracts';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const FIXTURES_DIR = path.resolve(__dirname, '..', 'fixtures');
-const DEFAULT_SCENARIO = 'mica-threshold-crossing';
+import { FIXTURES, DEFAULT_SCENARIO, listScenarios } from './fixtures-data';
 
 export interface FixtureFrame {
   delay_ms: number;
   envelope: WSEnvelope;
 }
 
+/**
+ * Validate the static fixture data (from `fixtures-data.ts`) for one scenario
+ * into typed frames. The `fs` read path was removed so the core is
+ * serverless-safe; the `isWSEnvelope` validation loop stays — the JSON import
+ * only guarantees JSON shape, not contract conformance. Kept async so existing
+ * call sites (`app.ts`, the `/audit` route) are unchanged.
+ */
 export async function loadFixture(scenario: string = DEFAULT_SCENARIO): Promise<FixtureFrame[]> {
-  const file = path.join(FIXTURES_DIR, `${scenario}.json`);
-  const raw = await readFile(file, 'utf-8');
-  const parsed: unknown = JSON.parse(raw);
+  const parsed: unknown = FIXTURES[scenario];
+  if (parsed === undefined) {
+    throw new Error(`fixture ${scenario}: unknown scenario`);
+  }
   if (!Array.isArray(parsed)) {
     throw new Error(`fixture ${scenario}: top level must be an array`);
   }
@@ -82,7 +84,5 @@ export function replay(
 }
 
 export function listFixtures(): string[] {
-  return ['mica-threshold-crossing', 'retraction', 'multi-crossing'];
+  return listScenarios();
 }
-
-export { FIXTURES_DIR };

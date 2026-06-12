@@ -2,14 +2,12 @@ import http from 'node:http';
 import type { AddressInfo } from 'node:net';
 import express from 'express';
 import { WebSocketServer, type WebSocket } from 'ws';
-import type {
-  IntentCreateRequest,
-  TradeIntent,
-  WSEnvelope,
-} from '@platform/contracts';
+import type { TradeIntent, WSEnvelope } from '@platform/contracts';
 import { isWSEnvelope } from '@platform/contracts';
-import { createRecord, getIntent, putIntent } from './intents.js';
-import { loadFixture, replay, type FixtureFrame } from './replay.js';
+import { createRecord, getIntent, putIntent } from './intents';
+import { loadFixture } from './replay';
+import { streamScenario } from './stream';
+import { validateIntentCreate } from './validate';
 
 export interface BackendOptions {
   /** Text-frame heartbeat interval; tests shrink this. */
@@ -46,25 +44,15 @@ export function createBackend(options: BackendOptions = {}): Backend {
   });
 
   // New shape (matches the production contract): server generates the id.
+  // Validation is delegated to validateIntentCreate() so express and the future
+  // Next route handler return IDENTICAL 400/422 responses.
   app.post('/v2/intents', (req, res) => {
-    const body = req.body as Partial<IntentCreateRequest> & { intent_id?: string };
-    if (!body || typeof body !== 'object') {
-      res.status(400).json({ error: 'body required' });
+    const result = validateIntentCreate(req.body);
+    if (!result.ok) {
+      res.status(result.error.status).json(result.error.body);
       return;
     }
-    if ('intent_id' in body) {
-      res.status(422).json({ error: 'intent_id is server-generated; do not send' });
-      return;
-    }
-    if (
-      typeof body.asset !== 'string' ||
-      typeof body.notional_usd !== 'string' ||
-      typeof body.venue_jurisdiction !== 'string'
-    ) {
-      res.status(422).json({ error: 'missing required fields' });
-      return;
-    }
-    const record = createRecord(body as IntentCreateRequest);
+    const record = createRecord(result.value);
     res.status(201).json(record);
   });
 
@@ -99,6 +87,76 @@ export function createBackend(options: BackendOptions = {}): Backend {
     }
   });
 
+  // SSE transport beside the WS path. This is a COMPASS + Vercel DEPLOYMENT
+  // ADAPTER, not a new cross-backend contract obligation (the canonical contract
+  // a real backend must implement stays WS-only). It exists so a Next route
+  // handler can stream the SAME `streamScenario` frames over a plain HTTP
+  // response, where long-lived WS upgrades are awkward on serverless.
+  app.get('/v2/stream/trade/:intentId', async (req, res) => {
+    const intentId = req.params.intentId;
+    const intent = getIntent(intentId);
+    if (!intent) {
+      res.status(404).json({ error: 'not found' });
+      return;
+    }
+    const scenarioOverride = (req.query.scenario as string | undefined) ?? null;
+    const scenario = pickScenario(intent, scenarioOverride);
+    const speed = Number(req.query.speed ?? '1') || 1;
+    // Resume cursor: Last-Event-ID header (EventSource auto-reconnect) takes
+    // precedence over an explicit ?fromSeq=… query.
+    const lastEventId = req.header('Last-Event-ID');
+    const fromSeq =
+      Number(lastEventId ?? (req.query.fromSeq as string | undefined) ?? '0') || 0;
+
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    const abort = new AbortController();
+    req.on('close', () => abort.abort());
+
+    // ':' comment lines are SSE heartbeats — ignored by EventSource, they keep
+    // the connection warm without being parsed as data.
+    const heartbeat = setInterval(() => {
+      if (!res.writableEnded) res.write(': ping\n\n');
+    }, pingIntervalMs);
+
+    try {
+      for await (const { envelope } of streamScenario({
+        scenario,
+        speed,
+        fromSeq,
+        signal: abort.signal,
+      })) {
+        if (res.writableEnded || abort.signal.aborted) break;
+        res.write(`id: ${envelope.seq}\n`);
+        res.write(`data: ${JSON.stringify(envelope)}\n\n`);
+      }
+      // Terminal frame: a named 'end' event marks a clean replay completion so
+      // the client can stop reconnecting (distinguishes "done" from "dropped").
+      if (!res.writableEnded && !abort.signal.aborted) {
+        res.write('event: end\n');
+        res.write('data: {}\n\n');
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (!res.writableEnded) {
+        const errorEnvelope: WSEnvelope = {
+          seq: 0,
+          ts: new Date().toISOString(),
+          type: 'error',
+          payload: { code: 'fixture_load_failed', message },
+        };
+        res.write(`data: ${JSON.stringify(errorEnvelope)}\n\n`);
+      }
+    } finally {
+      clearInterval(heartbeat);
+      if (!res.writableEnded) res.end();
+    }
+  });
+
   app.get('/health', (_req, res) => {
     res.json({ status: 'ok' });
   });
@@ -108,7 +166,7 @@ export function createBackend(options: BackendOptions = {}): Backend {
 
   interface ClientContext {
     intentId: string;
-    controller: ReturnType<typeof replay> | null;
+    abort: AbortController | null;
     heartbeat: ReturnType<typeof setInterval> | null;
   }
 
@@ -133,7 +191,7 @@ export function createBackend(options: BackendOptions = {}): Backend {
     const scenarioOverride = url.searchParams.get('scenario');
     const speed = Number(url.searchParams.get('speed') ?? '1') || 1;
 
-    const ctx: ClientContext = { intentId, controller: null, heartbeat: null };
+    const ctx: ClientContext = { intentId, abort: null, heartbeat: null };
     // A client both connects with ?intent_id=… AND sends a `subscribe` frame, so
     // startReplay can fire twice per connection. This synchronous latch ensures
     // exactly one replay — a second pass would re-deliver every envelope,
@@ -141,33 +199,32 @@ export function createBackend(options: BackendOptions = {}): Backend {
     // set before the first `await` so the two calls cannot race past it.
     let replayStarted = false;
 
+    // Both the WS and SSE paths drive the SAME `streamScenario` generator — it is
+    // the single source of replay timing.
     const startReplay = async (id: string) => {
       if (replayStarted) return;
       replayStarted = true;
       const intent = getIntent(id);
       const scenario = pickScenario(intent, scenarioOverride);
-      let frames: FixtureFrame[];
+      const abort = new AbortController();
+      ctx.abort = abort;
       try {
-        frames = await loadFixture(scenario);
+        for await (const { envelope } of streamScenario({ scenario, speed, signal: abort.signal })) {
+          if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(envelope));
+        }
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
-        ws.send(
-          JSON.stringify({
-            seq: 0,
-            ts: new Date().toISOString(),
-            type: 'error',
-            payload: { code: 'fixture_load_failed', message },
-          })
-        );
-        return;
+        if (ws.readyState === ws.OPEN) {
+          ws.send(
+            JSON.stringify({
+              seq: 0,
+              ts: new Date().toISOString(),
+              type: 'error',
+              payload: { code: 'fixture_load_failed', message },
+            })
+          );
+        }
       }
-      ctx.controller = replay(
-        frames,
-        (envelope: WSEnvelope) => {
-          if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(envelope));
-        },
-        speed
-      );
     };
 
     ws.on('message', (data, isBinary) => {
@@ -193,7 +250,7 @@ export function createBackend(options: BackendOptions = {}): Backend {
     }, pingIntervalMs);
 
     ws.on('close', () => {
-      if (ctx.controller) ctx.controller.cancel();
+      if (ctx.abort) ctx.abort.abort();
       if (ctx.heartbeat) clearInterval(ctx.heartbeat);
     });
 
