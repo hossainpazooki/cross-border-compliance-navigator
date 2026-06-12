@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { isWSEnvelope, type ServerEnvelope, type WSEnvelope } from '@platform/contracts';
+import { WS_BASE_URL } from '@shared/config/env';
 import { useSessionStore } from './store';
 
 const HEARTBEAT_TIMEOUT_MS = 30_000;
@@ -16,18 +17,11 @@ interface UseThresholdStreamOptions {
   enabled?: boolean;
 }
 
-// Reads the live-session WS endpoint base from env. Under Vite this resolves to
-// `import.meta.env.VITE_WS_URL`; once migrated to Next 15 (Phase C1) this also
-// honors `NEXT_PUBLIC_WS_BASE_URL` injected at build time. Default falls back
-// to the local mock-ws server.
+// Reads the live-session WS endpoint base from env (NEXT_PUBLIC_WS_BASE_URL,
+// centralized in src/shared/config/env.ts). Default falls back to the local
+// reference-backend WS when unset so `npm run dev:all` works with zero env.
 function wsBaseUrl(): string {
-  const fromVite = (import.meta.env as Record<string, string | undefined>).VITE_WS_URL;
-  // process.env reference survives Vite tree-shaking; guarded so unset stays unset.
-  const fromNext =
-    typeof process !== 'undefined' && process.env
-      ? (process.env as Record<string, string | undefined>).NEXT_PUBLIC_WS_BASE_URL
-      : undefined;
-  return fromVite || fromNext || 'ws://localhost:8787';
+  return WS_BASE_URL || 'ws://localhost:8787';
 }
 
 function buildWsUrl(intentId: string): string {

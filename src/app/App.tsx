@@ -1,6 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import { Header, ViewTabs, Footer } from '@app/layouts';
-import { Navigator, Pathway, Conflicts, WhatIf, Decoder, LogicDemo, DecisionCanvas, LiveSession, LiveIntent } from '@/pages';
+import { Navigator, Pathway, Conflicts, WhatIf, Decoder, LogicDemo, DecisionCanvas, LiveSession, LiveIntent } from '@/views';
 
 function App() {
   return (

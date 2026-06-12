@@ -46,14 +46,14 @@ src/
 │   ├── trace-explorer/  # Evaluation trace stepper
 │   ├── live-session/    # WebSocket streaming, threshold feed, NLI rationale, intents API
 │   └── hitl-review/     # Human-in-the-loop review queue
-├── pages/       # Route entry points (DecisionCanvas, LiveIntent, LiveSession, Navigator, …)
+├── views/       # SPA route entry points (DecisionCanvas, LiveIntent, LiveSession, Navigator, …) — renamed from pages/ so Next does not treat it as a Pages-Router dir
 ├── shared/      # ui/, api/ (axios client), lib/, config/ (PRODUCT, presets, help)  — leaf layer
 ├── hooks/       # Cross-cutting hooks (mostly re-exports of feature hooks)
 └── types/       # Shared TypeScript definitions
 ```
 
-**Path aliases** (`vite.config.ts`): `@app`, `@pages`, `@features`, `@entities`, `@shared`.
-**Import direction:** `app → pages → features → entities → shared`; `shared` imports nothing.
+**Path aliases** (`tsconfig.json`): `@app`, `@views`, `@features`, `@entities`, `@shared` (`@views` replaced `@pages` in the Next cutover; route components import via `@/views`).
+**Import direction:** `app → views → features → entities → shared`; `shared` imports nothing.
 
 ## Routes
 - `/` — DecisionCanvas (default 3-panel workspace)
@@ -75,6 +75,8 @@ The canonical local backend is **`@platform/reference-backend`** (this repo, `to
 - Sequenced envelope `{ seq, ts, type, payload }`; **11** message types (`subscribe`, `tick`, `risk_update`, `compliance`, `threshold`, `rationale_tok`, `rationale_verified`, `rationale_retracted`, `lead_position`, `auditor_finding`, `error`).
 - Application-level text `ping`/`pong` heartbeat (not the WS protocol ping — do not JSON-parse).
 - See `packages/contracts/README.md` for the full protocol.
+
+**SSE (deployment adapter, not a cross-backend obligation)** — `GET /v2/stream/trade/{intent_id}` streams the *same* sequenced envelopes as `text/event-stream` (`id:` = `envelope.seq`, `data:` = JSON, `:` heartbeat comments, terminal `event: end`). Resume via `Last-Event-ID` header or `?fromSeq`. Added so a future Next route handler can stream on Vercel without a long-lived WS upgrade. The canonical cross-backend contract a real backend must implement stays **WS-only**; the SSE conformance assertions are adapter-level (they prove COMPASS's SSE path equals the WS/audit truth). The serverless-safe core lives in `@platform/reference-backend` **subpath exports** (`./stream`, `./intent-codec`, `./intents`, `./validate`, `./fixtures`) — the root export drags in express/ws and must not be imported by a lambda.
 
 ## State
 - **Zustand**: UI state (`src/app/stores/uiStore.ts`), navigation (`src/features/navigation/model/`), live-session store.

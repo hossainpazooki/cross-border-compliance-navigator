@@ -2,15 +2,15 @@ import type {
   IntentCreateRequest,
   IntentRecord,
 } from '@platform/contracts';
+import { API_BASE_URL } from '@shared/config/env';
 
 // Reads the HTTP backend root. Defaults to the local @platform/reference-backend
-// (:8787), the canonical local backend booted by `npm run dev:all`. VITE_WS_URL
-// is the WS-base override (see useThresholdStream.ts) and is NOT used here — REST
-// routes may live on a separate origin from the WS endpoint in real deployments.
+// (:8787), the canonical local backend booted by `npm run dev:all`. The WS-base
+// override (NEXT_PUBLIC_WS_BASE_URL, see useThresholdStream.ts) is NOT used here
+// — REST routes may live on a separate origin from the WS endpoint in real
+// deployments. See src/shared/config/env.ts.
 function httpBase(): string {
-  const fromEnv = (import.meta.env as Record<string, string | undefined>)
-    .VITE_API_URL;
-  return fromEnv?.replace(/\/$/, '') || 'http://localhost:8787';
+  return API_BASE_URL.replace(/\/$/, '');
 }
 
 export class IntentApiError extends Error {
