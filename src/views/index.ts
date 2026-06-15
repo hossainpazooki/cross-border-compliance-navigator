@@ -7,3 +7,4 @@ export { LogicDemo } from './LogicDemo';
 export { DecisionCanvas } from './DecisionCanvas';
 export { LiveSession } from './LiveSession';
 export { LiveIntent } from './LiveIntent';
+export { DeskHome } from './DeskHome';

@@ -21,16 +21,34 @@ const DIRECTIONS: { value: IntentDirection; label: string }[] = [
   { value: 'sell', label: 'Sell' },
 ];
 
-export function IntentForm() {
+interface IntentFormProps {
+  /**
+   * Initial form values, supplied by the VIEW layer (e.g. desk-prefilled from
+   * the active desk's jurisdictions/regime). IntentForm stays desk-agnostic —
+   * it never reads the desk store; org context arrives as plain props.
+   */
+  initialVenue?: string;
+  initialTargets?: string[];
+  /**
+   * Called at the view layer once a session/intent exists (after the server
+   * returns an intent id, before navigation). The view uses this to stamp the
+   * session with its desk via the app-layer association map.
+   */
+  onSessionCreated?: (intentId: string) => void;
+}
+
+export function IntentForm({ initialVenue, initialTargets, onSessionCreated }: IntentFormProps = {}) {
   const navigate = useNavigate();
   const openSession = useSessionStore((s) => s.openSession);
 
   const [asset, setAsset] = useState('ETHUSDT');
   const [direction, setDirection] = useState<IntentDirection>('buy');
   const [notionalUsd, setNotionalUsd] = useState('100000');
-  const [venue, setVenue] = useState('EU');
+  const [venue, setVenue] = useState(initialVenue ?? 'EU');
   const [investorType, setInvestorType] = useState<InvestorType>('professional');
-  const [targets, setTargets] = useState<string[]>(['EU']);
+  const [targets, setTargets] = useState<string[]>(
+    initialTargets && initialTargets.length > 0 ? initialTargets : ['EU']
+  );
   const [holdingPeriod, setHoldingPeriod] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,6 +77,8 @@ export function IntentForm() {
     try {
       const record = await createIntent(payload);
       openSession(record.intent_id, { ...payload, intent_id: record.intent_id });
+      // Let the view stamp the desk↔session association before we navigate.
+      onSessionCreated?.(record.intent_id);
       navigate(`/live/${record.intent_id}`);
     } catch (err) {
       const detail =

@@ -7,6 +7,7 @@
     "jurisdiction": "EU",
     "framework": "MiCA 2023/1114",
     "effectiveDate": "2024-06-30",
+    "regime_id": "mica_2023",
     "tags": ["stablecoin", "EMT", "ART", "authorization"]
   },
   "tree": {

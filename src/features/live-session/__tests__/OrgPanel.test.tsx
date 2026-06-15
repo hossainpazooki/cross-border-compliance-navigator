@@ -115,6 +115,37 @@ describe('OrgPanel', () => {
     expect(advisory).not.toHaveTextContent(/retraction/i);
   });
 
+  it('shows the routing line and an EU wake dot before any position arrives', () => {
+    let seq = 1;
+    apply(env(seq++, 'threshold', crossing('c1', 'MiCA Art. 5(1)')));
+
+    render(<OrgPanel intentId={INTENT_ID} crossingId="c1" />);
+
+    // One crossing → one orchestrator, visible from the start.
+    expect(screen.getByTestId('org-orchestrator')).toHaveTextContent(
+      /routed to Lead Compliance Officer \(LCO\)/
+    );
+    // Lazy wake: MICA_ implicates exactly the EU specialist.
+    expect(screen.getByTestId('specialist-seat-EU')).toHaveAccessibleName(/woken/);
+    expect(screen.getByTestId('specialist-seat-UK')).toHaveAccessibleName(/idle/);
+  });
+
+  it('renders the NLI gate as an explicit stage across its three states', () => {
+    let seq = 1;
+    apply(env(seq++, 'threshold', crossing('c1', 'MiCA Art. 5(1)')));
+    apply(env(seq++, 'rationale_tok', { rationale_id: 'r1', crossing_id: 'c1', token: 'draft' }));
+
+    const { unmount } = render(<OrgPanel intentId={INTENT_ID} crossingId="c1" />);
+    expect(screen.getByTestId('org-gate')).toHaveTextContent(/awaiting grounding/i);
+    unmount();
+
+    apply(env(seq++, 'rationale_retracted', { rationale_id: 'r1', crossing_id: 'c1', final_score: 0.3, reason: 'NLI failed' }));
+    render(<OrgPanel intentId={INTENT_ID} crossingId="c1" />);
+    const gate = screen.getByTestId('org-gate');
+    expect(gate).toHaveTextContent(/draft died at the gate/i);
+    expect(gate).toHaveTextContent('NLI failed');
+  });
+
   it('renders nothing for a retracted crossing’s positions (wake-on-verified)', () => {
     let seq = 1;
     apply(env(seq++, 'threshold', crossing('c1', 'MiCA Art. 5(1)')));

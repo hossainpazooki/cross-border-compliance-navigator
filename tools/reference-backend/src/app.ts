@@ -173,7 +173,11 @@ export function createBackend(options: BackendOptions = {}): Backend {
   function pickScenario(intent: TradeIntent | undefined, override?: string | null): string {
     if (override) return override;
     if (!intent) return 'mica-threshold-crossing';
-    if (intent.target_jurisdictions.includes('EU')) return 'mica-threshold-crossing';
+    // `target_jurisdictions` is optional on records minted via the new
+    // `/v2/intents` shape (IntentCreateRequest carries only asset / notional_usd /
+    // venue_jurisdiction), so guard the access — dereferencing it raw crashed the
+    // WS handler's startReplay for every codec-minted intent.
+    if (intent.target_jurisdictions?.includes('EU')) return 'mica-threshold-crossing';
     return 'mica-threshold-crossing';
   }
 

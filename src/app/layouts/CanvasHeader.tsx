@@ -6,11 +6,15 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiClient } from '@shared/api';
-import { PRODUCT } from '@shared/config';
+import { PRODUCT, DESKS } from '@shared/config';
 import { Badge } from '@shared/ui';
+import { useDeskStore, activeDesk, activeMember } from '@app/stores';
 
 export function CanvasHeader() {
   const [backendStatus, setBackendStatus] = useState<'checking' | 'connected' | 'error'>('checking');
+  const desk = useDeskStore(activeDesk);
+  const member = useDeskStore(activeMember);
+  const setActiveDesk = useDeskStore((s) => s.setActiveDesk);
 
   useEffect(() => {
     const checkBackend = async () => {
@@ -49,6 +53,33 @@ export function CanvasHeader() {
       </div>
 
       <div className="flex items-center gap-3">
+        {/* Desk context chip — always-visible org identity (demo identity).
+            TODO(desk): mirror this into the live-session BoardBar once the
+            Stage-3 + redesign change-sets are committed (deferred to keep this
+            MVP a disjoint commit). */}
+        <Link
+          to="/desk"
+          className="flex items-center gap-2 rounded-lg border border-slate-700 px-2.5 py-1 text-xs transition-colors hover:bg-slate-800"
+          title="Desk home"
+        >
+          <span className="text-slate-200">{desk.name}</span>
+          {member && <span className="text-slate-500">· {member.name}</span>}
+        </Link>
+        {DESKS.length > 1 && (
+          <select
+            aria-label="Switch desk"
+            value={desk.id}
+            onChange={(e) => setActiveDesk(e.target.value)}
+            className="rounded border border-slate-700 bg-slate-900 px-1.5 py-1 text-xs text-slate-300"
+          >
+            {DESKS.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name}
+              </option>
+            ))}
+          </select>
+        )}
+
         <Link
           to="/legacy"
           className="text-sm text-slate-400 transition-colors hover:text-white"
