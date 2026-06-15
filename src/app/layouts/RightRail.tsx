@@ -14,7 +14,6 @@ import { Badge, PanelHeader } from '@shared/ui';
 import { RightRailArea } from './CanvasLayout';
 
 /** Credit mode maps regulatory tiers to credit-specific labels */
-// eslint-disable-next-line react-refresh/only-export-components
 export const CREDIT_TIER_LABELS: Record<string, string> = {
   retail: 'Summary',
   institutional: 'Detailed',

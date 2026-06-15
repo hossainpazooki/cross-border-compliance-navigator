@@ -17,8 +17,8 @@ client creates intent (REST) → opens WS for intent → server streams ticks
 ```
 
 Two backend surfaces, **separate origins** in production:
-- **REST** (`VITE_API_URL`, default `http://localhost:8000`) — intent lifecycle + audit replay.
-- **WebSocket** (`VITE_WS_URL` / `NEXT_PUBLIC_WS_BASE_URL`, default local mock-ws `ws://localhost:8787`) — the streaming protocol.
+- **REST** (`VITE_API_URL`, default local reference backend `http://localhost:8787`) — intent lifecycle + audit replay.
+- **WebSocket** (`VITE_WS_URL` / `NEXT_PUBLIC_WS_BASE_URL`, default local reference backend `ws://localhost:8787`) — the streaming protocol.
 
 Implemented in `packages/contracts/src/*` (types + guards) and `src/features/live-session/*` (hook, store, UI).
 
@@ -166,7 +166,7 @@ type WSEnvelope<M> = M & { seq: number; ts: string };  // ts ISO-8601
 
 ## §8 REST surface (intents + audit)
 
-`src/features/live-session/api/intentsApi.ts`. Base = `VITE_API_URL` (default `http://localhost:8000`).
+`src/features/live-session/api/intentsApi.ts`. Base = `VITE_API_URL` (default `http://localhost:8787`).
 
 | Method + path | Body | Returns | Notes |
 |---|---|---|---|

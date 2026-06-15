@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, cleanup } from '@testing-library/react';
+import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 
 vi.mock('@tanstack/react-virtual', () => ({
   useVirtualizer: ({ count }: { count: number }) => ({
@@ -108,5 +108,17 @@ describe('ThresholdFeed', () => {
     const articles = screen.getAllByRole('article');
     expect(articles[0]).toHaveTextContent('FCA RP §3.2');
     expect(articles[1]).toHaveTextContent('MiCA Art. 5(1)');
+  });
+
+  it('offers "Inspect in org" only when a selection callback is provided', () => {
+    emitThreshold(1, 'c1', 'MiCA Art. 5(1)');
+    const { unmount } = render(<ThresholdFeed intentId={INTENT_ID} />);
+    expect(screen.queryByRole('button', { name: /inspect .* in org/i })).not.toBeInTheDocument();
+    unmount();
+
+    const onSelect = vi.fn();
+    render(<ThresholdFeed intentId={INTENT_ID} onSelectCrossing={onSelect} />);
+    fireEvent.click(screen.getByRole('button', { name: /inspect MiCA Art\. 5\(1\) in org/i }));
+    expect(onSelect).toHaveBeenCalledWith('c1');
   });
 });

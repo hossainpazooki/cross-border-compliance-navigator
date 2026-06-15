@@ -1,6 +1,10 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
+import { API_BASE_URL } from '@shared/config/env';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// REST origin. Defaults to the local @platform/reference-backend (:8787) so
+// `npm run dev:all` works with zero env setup. Production sets
+// NEXT_PUBLIC_API_BASE_URL explicitly (Vercel); navigate/decoder/counterfactual
+// fall back to in-app demo. See src/shared/config/env.ts.
 
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,

@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiClient } from '@shared/api';
-import { PRODUCT } from '@shared/config';
+import { PRODUCT, API_BASE_URL } from '@shared/config';
 
 export function Header() {
   const [backendStatus, setBackendStatus] = useState<'checking' | 'connected' | 'error'>('checking');
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  const apiUrl = API_BASE_URL;
 
   useEffect(() => {
     const checkBackend = async () => {

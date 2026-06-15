@@ -3,6 +3,15 @@ import { act, cleanup, renderHook } from '@testing-library/react';
 import type { ServerEnvelope, TradeIntent } from '@platform/contracts';
 import { useSessionStore } from '../store';
 
+// Stage 3: useThresholdStream became a facade over a WS and an SSE transport.
+// Pin the explicit transport override BEFORE any module reads env (vi.hoisted
+// runs ahead of imports), so this suite continues to exercise the WS path with
+// the react-use-websocket mock below — no transport inference, no behavior
+// change to the assertions.
+vi.hoisted(() => {
+  process.env.NEXT_PUBLIC_STREAM_TRANSPORT = 'ws';
+});
+
 interface MockState {
   lastMessage: MessageEvent | null;
   readyState: number;

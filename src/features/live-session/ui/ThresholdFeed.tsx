@@ -8,9 +8,12 @@ const SCROLL_PIN_THRESHOLD_PX = 100;
 
 interface ThresholdFeedProps {
   intentId: string;
+  /** When provided, cards offer an "Inspect in org" affordance driving the org panel. */
+  onSelectCrossing?: (crossingId: string) => void;
+  selectedCrossingId?: string | null;
 }
 
-export function ThresholdFeed({ intentId }: ThresholdFeedProps) {
+export function ThresholdFeed({ intentId, onSelectCrossing, selectedCrossingId }: ThresholdFeedProps) {
   const crossings = useCrossings(intentId);
   const connection = useConnection(intentId);
   const parentRef = useRef<HTMLDivElement | null>(null);
@@ -78,7 +81,12 @@ export function ThresholdFeed({ intentId }: ThresholdFeedProps) {
                 paddingBottom: '0.75rem',
               }}
             >
-              <ThresholdCard intentId={intentId} crossing={crossing} />
+              <ThresholdCard
+                intentId={intentId}
+                crossing={crossing}
+                onSelect={onSelectCrossing}
+                selected={crossing.crossing_id === selectedCrossingId}
+              />
             </div>
           );
         })}

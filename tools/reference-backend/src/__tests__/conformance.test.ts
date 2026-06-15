@@ -103,6 +103,58 @@ function collectStream(path: string, opts?: { subscribe?: string }): Promise<Str
   });
 }
 
+interface SSEEvent {
+  id?: string;
+  event?: string;
+  data: string;
+}
+
+interface SSEResult {
+  events: SSEEvent[];
+  envelopes: WSEnvelope[];
+  ended: boolean;
+}
+
+/**
+ * Read a `text/event-stream` response to completion and parse it into SSE
+ * events. Frames are separated by a blank line; `id:`/`event:`/`data:` field
+ * lines and `:` heartbeat comments are handled per the SSE spec.
+ */
+async function collectSSE(path: string, headers?: Record<string, string>): Promise<SSEResult> {
+  const res = await fetch(`${base}${path}`, { headers });
+  expect(res.status).toBe(200);
+  expect(res.headers.get('content-type')).toContain('text/event-stream');
+  const text = await res.text();
+
+  const events: SSEEvent[] = [];
+  for (const block of text.split('\n\n')) {
+    if (block.trim() === '') continue;
+    const ev: SSEEvent = { data: '' };
+    let sawField = false;
+    const dataLines: string[] = [];
+    for (const line of block.split('\n')) {
+      if (line.startsWith(':')) continue; // heartbeat comment
+      const idx = line.indexOf(':');
+      const field = idx === -1 ? line : line.slice(0, idx);
+      const value = idx === -1 ? '' : line.slice(idx + 1).replace(/^ /, '');
+      if (field === 'id') ev.id = value;
+      else if (field === 'event') ev.event = value;
+      else if (field === 'data') dataLines.push(value);
+      else continue;
+      sawField = true;
+    }
+    if (!sawField) continue;
+    ev.data = dataLines.join('\n');
+    events.push(ev);
+  }
+
+  const ended = events.some((e) => e.event === 'end');
+  const envelopes = events
+    .filter((e) => e.event !== 'end')
+    .map((e) => JSON.parse(e.data) as WSEnvelope);
+  return { events, envelopes, ended };
+}
+
 describe('REST: intent lifecycle', () => {
   it('POST /v2/intents creates a record with a server-generated id', async () => {
     const record = await createIntent();
@@ -217,5 +269,89 @@ describe('WS: live stream', () => {
     ]);
     const audited = (await auditRes.json()) as WSEnvelope[];
     expect(audited.map((e) => [e.seq, e.type])).toEqual(streamed.map((e) => [e.seq, e.type]));
+  });
+});
+
+/**
+ * ADAPTER-LEVEL assertions — NOT part of the cross-backend contract.
+ *
+ * SSE is a COMPASS + Vercel DEPLOYMENT ADAPTER. The canonical contract a real
+ * backend (regulatory-rule-engine / ke-workbench Gate-5) must implement stays
+ * WS-ONLY. These assertions prove COMPASS's own SSE path equals the WS/audit
+ * truth for the same scenario; they impose NO obligation on a real backend.
+ */
+describe('ADAPTER (COMPASS/Vercel, not cross-backend contract): SSE stream', () => {
+  it('streams valid envelopes with strictly monotonic seq and a terminal event: end', { timeout: 20_000 }, async () => {
+    const record = await createIntent();
+    const { envelopes, ended } = await collectSSE(`/v2/stream/trade/${record.intent_id}?speed=50`);
+
+    expect(envelopes.length).toBeGreaterThan(0);
+    for (const [i, envelope] of envelopes.entries()) {
+      expect(isWSEnvelope(envelope), `sse frame ${i}`).toBe(true);
+    }
+    // seq is STRICTLY monotonic (strictly increasing, not merely sorted)
+    for (let i = 1; i < envelopes.length; i++) {
+      expect(envelopes[i].seq).toBeGreaterThan(envelopes[i - 1].seq);
+    }
+    expect(ended).toBe(true);
+  });
+
+  it('emits the seq as the SSE id field on every data frame', { timeout: 20_000 }, async () => {
+    const record = await createIntent();
+    const { events } = await collectSSE(`/v2/stream/trade/${record.intent_id}?speed=50`);
+    for (const ev of events) {
+      if (ev.event === 'end') continue;
+      const envelope = JSON.parse(ev.data) as WSEnvelope;
+      expect(ev.id).toBe(String(envelope.seq));
+    }
+  });
+
+  it('resumes from Last-Event-ID, yielding only frames after the cursor', { timeout: 20_000 }, async () => {
+    const record = await createIntent();
+    const full = await collectSSE(`/v2/stream/trade/${record.intent_id}?speed=50`);
+    expect(full.envelopes.length).toBeGreaterThan(2);
+
+    const cursor = full.envelopes[1].seq; // resume after the 2nd frame
+    const resumed = await collectSSE(`/v2/stream/trade/${record.intent_id}?speed=50`, {
+      'Last-Event-ID': String(cursor),
+    });
+    // every resumed frame is strictly after the cursor
+    for (const e of resumed.envelopes) expect(e.seq).toBeGreaterThan(cursor);
+    // and resume == the tail of the full stream
+    const tail = full.envelopes.filter((e) => e.seq > cursor);
+    expect(resumed.envelopes.map((e) => [e.seq, e.type])).toEqual(
+      tail.map((e) => [e.seq, e.type])
+    );
+  });
+
+  it('?fromSeq resumes identically to Last-Event-ID', { timeout: 20_000 }, async () => {
+    const record = await createIntent();
+    const full = await collectSSE(`/v2/stream/trade/${record.intent_id}?speed=50`);
+    const cursor = full.envelopes[1].seq;
+    const resumed = await collectSSE(
+      `/v2/stream/trade/${record.intent_id}?speed=50&fromSeq=${cursor}`
+    );
+    for (const e of resumed.envelopes) expect(e.seq).toBeGreaterThan(cursor);
+  });
+
+  it('unknown intent id yields 404 (not a stream)', async () => {
+    const res = await fetch(`${base}/v2/stream/trade/int_does-not-exist`);
+    expect(res.status).toBe(404);
+  });
+
+  it('EQUIVALENCE: SSE stream === WS stream === GET /audit replay for the same scenario', { timeout: 20_000 }, async () => {
+    const record = await createIntent();
+    const [sse, ws, auditRes] = await Promise.all([
+      collectSSE(`/v2/stream/trade/${record.intent_id}?speed=50`),
+      collectStream(`/v2/ws/trade/${record.intent_id}?speed=50`),
+      fetch(`${base}/audit/${record.intent_id}`),
+    ]);
+    const audited = (await auditRes.json()) as WSEnvelope[];
+
+    const shape = (es: WSEnvelope[]) => es.map((e) => [e.seq, e.type]);
+    expect(shape(sse.envelopes)).toEqual(shape(ws.envelopes));
+    expect(shape(sse.envelopes)).toEqual(shape(audited));
+    // Full payload equivalence, not just shape: SSE === audit byte-for-byte.
+    expect(sse.envelopes).toEqual(audited);
   });
 });

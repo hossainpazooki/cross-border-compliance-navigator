@@ -36,3 +36,13 @@ export function getRulesForJurisdiction(jurisdiction: string): RuleDefinition[] 
 export function getAllRuleIds(): string[] {
   return Object.keys(RULES);
 }
+
+/**
+ * Get all rules belonging to an ATLAS regime (e.g. 'mica_2023'). This is the
+ * join key between a Desk's rule pack and ATLAS's signed artifact provenance.
+ */
+export function getRulesByRegime(regimeId: string): RuleDefinition[] {
+  return Object.values(RULES).filter(
+    (rule) => rule.metadata.regime_id === regimeId
+  );
+}

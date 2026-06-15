@@ -25,7 +25,7 @@ export function RetractedRationaleQueue({ intentId }: Props) {
 
   if (rationales.length === 0) {
     return (
-      <div className="px-4 py-6 text-sm text-zinc-500">
+      <div className="px-4 py-6 text-sm text-slate-400">
         No retracted rationales in this session.
       </div>
     );
@@ -43,26 +43,26 @@ export function RetractedRationaleQueue({ intentId }: Props) {
   }));
 
   return (
-    <div className="flex flex-col divide-y divide-zinc-200">
-      <div className="px-4 py-2 text-xs font-medium uppercase tracking-wide text-zinc-500">
+    <div className="flex flex-col divide-y divide-slate-800">
+      <div className="px-4 py-2 text-xs font-medium uppercase tracking-wide text-slate-400">
         Retracted rationales ({rows.length})
       </div>
       {rows.map(({ rationale, citation, ruleId }) => (
         <div key={rationale.rationale_id || rationale.crossing_id} className="px-4 py-3">
           <div className="flex items-baseline justify-between gap-3">
-            <div className="text-sm font-medium text-zinc-900">{citation}</div>
-            <div className="text-xs text-zinc-500">
+            <div className="text-sm font-medium text-slate-200">{citation}</div>
+            <div className="text-xs text-slate-400">
               {rationale.final_score != null && (
                 <span>score {rationale.final_score.toFixed(2)}</span>
               )}
             </div>
           </div>
-          <div className="mt-0.5 text-xs text-zinc-500">rule {ruleId}</div>
-          <p className="mt-2 whitespace-pre-wrap text-sm text-zinc-700">
-            {rationale.content || <em className="text-zinc-400">no content captured</em>}
+          <div className="mt-0.5 text-xs text-slate-400">rule {ruleId}</div>
+          <p className="mt-2 whitespace-pre-wrap text-sm text-slate-300">
+            {rationale.content || <em className="text-slate-500">no content captured</em>}
           </p>
           {rationale.retraction_reason && (
-            <div className="mt-2 text-xs text-rose-700">
+            <div className="mt-2 text-xs text-rose-400">
               <span className="font-medium">retracted:</span> {rationale.retraction_reason}
             </div>
           )}

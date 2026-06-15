@@ -1,4 +1,5 @@
 import type { ThresholdCrossing } from '@platform/contracts';
+import { cn } from '@shared/lib';
 import { CitationHeader } from './CitationHeader';
 import { VerdictTransitionPill } from './VerdictTransitionPill';
 import { RationaleStream } from './RationaleStream';
@@ -6,6 +7,9 @@ import { RationaleStream } from './RationaleStream';
 interface ThresholdCardProps {
   intentId: string;
   crossing: ThresholdCrossing;
+  /** When provided, the card offers an "Inspect in org" selection affordance. */
+  onSelect?: (crossingId: string) => void;
+  selected?: boolean;
 }
 
 function formatBoundary(boundary: string): string {
@@ -14,10 +18,13 @@ function formatBoundary(boundary: string): string {
   return n.toLocaleString('en-US');
 }
 
-export function ThresholdCard({ intentId, crossing }: ThresholdCardProps) {
+export function ThresholdCard({ intentId, crossing, onSelect, selected }: ThresholdCardProps) {
   return (
     <article
-      className="rounded-lg border border-slate-800 bg-slate-900 p-4 space-y-3"
+      className={cn(
+        'rounded-lg border border-slate-800 bg-slate-900 p-4 space-y-3',
+        selected && 'ring-1 ring-blue-500/60'
+      )}
       aria-labelledby={`crossing-${crossing.crossing_id}`}
     >
       <header className="flex items-start justify-between gap-3">
@@ -38,6 +45,19 @@ export function ThresholdCard({ intentId, crossing }: ThresholdCardProps) {
         <VerdictTransitionPill prior={crossing.prior_verdict} next={crossing.new_verdict} />
       </header>
       <RationaleStream intentId={intentId} crossingId={crossing.crossing_id} />
+      {onSelect && (
+        <button
+          type="button"
+          aria-label={`Inspect ${crossing.citation} in org`}
+          onClick={() => onSelect(crossing.crossing_id)}
+          className={cn(
+            'text-xs transition-colors',
+            selected ? 'text-blue-300' : 'text-slate-400 hover:text-blue-300'
+          )}
+        >
+          Inspect in org →
+        </button>
+      )}
     </article>
   );
 }

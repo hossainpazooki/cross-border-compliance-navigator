@@ -9,6 +9,8 @@ export interface RuleMetadata {
   effectiveDate: string;
   expiresDate?: string;
   tags?: string[];
+  /** ATLAS regime this rule pack belongs to (join key to atlas-provenance). */
+  regime_id?: string;
 }
 
 /**

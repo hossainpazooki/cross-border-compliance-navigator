@@ -3,6 +3,7 @@ import { useNavigationStore } from '@features/navigation/model/store';
 import { useSessionStore } from '../store';
 import { intentFromForm } from '../intentFromForm';
 import { Button } from '@shared/ui';
+import { WS_BASE_URL } from '@shared/config/env';
 
 function generateIntentId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -12,8 +13,8 @@ function generateIntentId(): string {
 }
 
 async function postIntent(intent: ReturnType<typeof intentFromForm>): Promise<void> {
-  const base = import.meta.env.VITE_WS_URL
-    ? import.meta.env.VITE_WS_URL.replace(/^ws:/, 'http:').replace(/^wss:/, 'https:')
+  const base = WS_BASE_URL
+    ? WS_BASE_URL.replace(/^ws:/, 'http:').replace(/^wss:/, 'https:')
     : 'http://localhost:8787';
   try {
     await fetch(`${base}/intent`, {

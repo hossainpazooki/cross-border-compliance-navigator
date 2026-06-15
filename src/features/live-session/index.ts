@@ -22,3 +22,5 @@ export {
   DEFAULT_ORCHESTRATOR,
 } from './orchestratorRouting';
 export type { OrchestratingLead } from './orchestratorRouting';
+export { specialistFor, SPECIALISTS, SPECIALIST_PREFIX_MAP } from './specialistRouting';
+export type { SpecialistJurisdiction, SpecialistSeat } from './specialistRouting';

@@ -2,44 +2,43 @@
 
 A running record of cross-cutting build/deploy decisions for COMPASS. This captures what is **actually decided and visible in-repo**; open items are marked TBD rather than invented.
 
-> Scope note: the Vite → Next 15 migration is now **actively planned** (see [Phase C1 — migration plan](#phase-c1--vite--next-15-migration-plan) below). The app remains on Vite today; the plan is staged so the cutover ships in low-risk increments. `next.config.mjs` is the pre-written, currently-inert target config for this work.
+> Scope note: the Vite → Next 15 migration has **landed in-tree** (see [Phase C1 — migration plan](#phase-c1--vite--next-15-migration-plan) below). The app now builds on Next 15 (App Router); `next.config.mjs` is active. What remains is outward-facing / deploy-time wiring (point `BACKEND_ORIGIN` at the `regulatory-rule-engine` ALB and verify the same-origin WS upgrade through the edge).
 
 ---
 
 ## Decision 5 — Option A: same-origin WS + REST proxy (Phase C1)
 
-**Status:** planned / not started. Vite is the active build; there is no `next` dependency.
+**Status:** Next 15 cutover landed in-tree; `next.config.mjs` is active. Remaining work is deploy-time only (point `BACKEND_ORIGIN` at the ALB; verify edge WS upgrade).
 
-**Decision.** Once the app migrates to Next 15, the browser talks to a single origin (`dev.hossainpazooki.com`) for everything, and Vercel edge rewrites proxy the backend paths to the EKS ALB. This removes the CORS hop on production paths.
+**Decision.** The browser talks to a single origin (`dev.hossainpazooki.com`) for REST/audit/health, and Vercel edge rewrites proxy those backend paths to the EKS ALB. This removes the CORS hop on production paths. The WebSocket endpoint is **not** proxied — it is reached directly via `NEXT_PUBLIC_WS_BASE_URL`.
 
-**Proxied paths** (`next.config.mjs` rewrites → `EKS_ALB_HOST`):
+**Proxied paths** (`next.config.mjs` `rewrites().beforeFiles` → `BACKEND_ORIGIN`, env-gated; the rewrite set is empty when `BACKEND_ORIGIN` is unset):
 
 | Source | Destination |
 |---|---|
-| `/v2/ws/:path*` | `https://{EKS_ALB_HOST}/v2/ws/:path*` (WebSocket upgrade) |
-| `/v2/:path*` | `https://{EKS_ALB_HOST}/v2/:path*` |
-| `/api/:path*` | `https://{EKS_ALB_HOST}/api/:path*` |
-| `/audit/:path*` | `https://{EKS_ALB_HOST}/audit/:path*` |
-| `/decide/:path*` | `https://{EKS_ALB_HOST}/decide/:path*` |
-| `/credit/:path*` | `https://{EKS_ALB_HOST}/credit/:path*` |
+| `/v2/:path*` | `${BACKEND_ORIGIN}/v2/:path*` |
+| `/audit/:path*` | `${BACKEND_ORIGIN}/audit/:path*` |
+| `/health` | `${BACKEND_ORIGIN}/health` |
 
-**Backend.** `EKS_ALB_HOST` points at the **`regulatory-rule-engine`** ALB (currently the placeholder `k8s-institut-...elb.amazonaws.com` host hardcoded as a default in `next.config.mjs`; update when the rename lands).
+There is intentionally **no** WebSocket rewrite; WS is reached directly via `NEXT_PUBLIC_WS_BASE_URL`.
+
+**Backend.** `BACKEND_ORIGIN` should point at the **`regulatory-rule-engine`** ALB. There is no hardcoded ALB-host default in `next.config.mjs` — when `BACKEND_ORIGIN` is unset the proxy rewrites are simply omitted. Wiring the host is outward-facing / deploy-time work (blocked locally).
 
 ### Active configuration (today)
 
-Until Phase C1 lands, the build is governed by:
-- `vite.config.ts` — dev server (port 5173), `@`-aliases, `/api` proxy to `http://localhost:8000`.
-- `vercel.json` — `framework: "vite"`, `buildCommand`, SPA rewrite, security headers.
+The build is now governed by Next 15 (App Router):
+- `next.config.mjs` — active: `reactStrictMode`, `transpilePackages` for the three `@platform/*` workspaces, env-gated `rewrites().beforeFiles` (REST/audit/health → `BACKEND_ORIGIN`), and security `headers()`. `next dev` runs on port 5173.
+- `vercel.json` — `framework: "nextjs"`.
 
-The live-session hook already reads `NEXT_PUBLIC_WS_BASE_URL` as a fallback (`useThresholdStream.ts`) so the WS base resolves under both Vite and a future Next build without code changes.
+The live-session hook reads `NEXT_PUBLIC_WS_BASE_URL` (`useThresholdStream.ts`) so the WS base resolves directly without going through the Next rewrite layer.
 
 ### Migration acceptance (TBD)
 
-- [ ] Add `next` + framework deps; port `index.html` → Next App Router entry.
-- [ ] Switch `vercel.json`/`vercel.ts` `framework` to `nextjs`; activate `next.config.mjs` rewrites.
-- [ ] Verify same-origin WS upgrade works through the edge to the ALB.
-- [ ] Point `EKS_ALB_HOST` at the `regulatory-rule-engine` ALB.
-- [ ] Remove the dev-only CORS proxy from `vite.config.ts`.
+- [x] Add `next` + framework deps; port `index.html` → Next App Router entry. _(done in-tree — `next ^15.5.19`; App-Router entry under `app/`.)_
+- [x] Switch `vercel.json`/`vercel.ts` `framework` to `nextjs`; activate `next.config.mjs` rewrites. _(done in-tree — `vercel.json` is `framework: "nextjs"`; `next.config.mjs` active with env-gated `BACKEND_ORIGIN` rewrites.)_
+- [ ] Verify same-origin WS upgrade works through the edge to the ALB. _(outward-facing / deploy-time — blocked locally.)_
+- [ ] Point `BACKEND_ORIGIN` at the `regulatory-rule-engine` ALB. _(outward-facing / deploy-time — blocked locally.)_
+- [x] ~~Remove the dev-only CORS proxy from `vite.config.ts`.~~ Done — the orphaned `/api`→`:8000` proxy was removed when the local default moved to the reference backend on `:8787`.
 
 ---
 
