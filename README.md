@@ -178,6 +178,14 @@ COMPASS is a **verify-only consumer** of ATLAS (`regulatory-rule-engine`) rule a
 - **Honestly bounded — origin, not current validity.** The snapshot proves *origin* (content hash, canon triplet, signer), but `registry_state` is `"unknown"` for every entry, because Published/Revoked lives only in the live ATLAS registry. Signatures use fixed-seed **test keys**, labelled as non-authoritative. The card surfaces both disclosures.
 - **The rewire seam.** `WASM_VERIFY_ENABLED` (reads `NEXT_PUBLIC_USE_WASM_VERIFY`, default off) is the flag for the **post-Gate-5** rewire: when ATLAS publishes the `@platform/atlas-artifact` WASM verifier and a reachable `ke serve`, COMPASS will verify in-browser against the **live registry view** — a non-`Published` pack reads as **blocked even with valid cryptography**, and verification **fails closed on `unknown`** (ATLAS ADR-0019).
 
+### Live verification (gated, dormant)
+
+The verification layer is wired but **OFF by default** and stays dormant until `@platform/atlas-artifact` ships — nothing is cryptographically verified today; provenance is surfaced from the snapshot only.
+
+- **Flags.** `NEXT_PUBLIC_USE_WASM_VERIFY` (default unset = off) turns the layer on; `NEXT_PUBLIC_ATLAS_REGISTRY_URL` points at a `ke-cli serve` base URL. With the flag on **and** a registry URL set, COMPASS uses the HTTP **`serve`** path (`POST /verify`); with the flag on but no URL, it falls back to the in-browser **`wasm`** path, which is **intentionally blocked** pending the package publish.
+- **Fail-closed (ADR-0019).** The decision is `allowed` only when crypto verifies **and** `registry_state === 'Published'`. A rejected signature, a non-`Published` state, or an unavailable/`Unknown` registry all resolve to **blocked**. Flag off is a distinct `unverified` (snapshot) state — *no verification was attempted*, not a failure.
+- **Default behavior is unchanged.** With the flag off the DeskHome card renders exactly as before, now routed through the typed `unverified` status.
+
 ---
 
 ## Architecture
