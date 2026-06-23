@@ -80,7 +80,9 @@ describe('verifyArtifactGate — mode routing (mocked verifier)', () => {
     serveVerifyMock.mockResolvedValue(serveResponse('verified', 'Published'));
     const decision = await verifyArtifactGate({ hash: 'deadbeef', isTestKey: false });
     expect(decision).toEqual({ status: 'allowed', testKey: false });
-    expect(serveVerifyMock).toHaveBeenCalledWith('https://registry.example', 'deadbeef');
+    // Verify goes through the SAME-ORIGIN proxy base, not the registry origin
+    // directly (ke serve has no CORS); the proxy forwards server-side.
+    expect(serveVerifyMock).toHaveBeenCalledWith('/atlas', 'deadbeef');
   });
 
   it("carries isTestKey through into an allowed decision (mode 'serve')", async () => {

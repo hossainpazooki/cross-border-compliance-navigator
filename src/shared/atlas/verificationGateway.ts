@@ -22,6 +22,11 @@ import { decideGate, SNAPSHOT_DECISION } from './verificationPolicy';
 import { serveVerify, RegistryUnavailableError, ArtifactNotFoundError } from './registryClient';
 import type { GateDecision, VerificationEvidence } from './verificationTypes';
 
+// Same-origin base for the verify proxy (app/atlas/verify). serveVerify appends
+// '/verify', so the browser POSTs '/atlas/verify' same-origin — no CORS. The proxy
+// forwards server-side to ATLAS_REGISTRY_URL.
+const VERIFY_PROXY_BASE = '/atlas';
+
 export interface VerifyArtifactGateInput {
   /** Artifact content hash to verify (null/empty for an unsigned artifact). */
   hash: string | null;
@@ -79,7 +84,10 @@ export async function verifyArtifactGate(
   }
 
   try {
-    const res = await serveVerify(ATLAS_REGISTRY_URL, hash);
+    // Verify through the SAME-ORIGIN proxy (app/atlas/verify), not the registry
+    // origin directly: `ke serve` sends no CORS headers, so a browser cannot call
+    // it cross-origin. The proxy (server-side) forwards to ATLAS_REGISTRY_URL.
+    const res = await serveVerify(VERIFY_PROXY_BASE, hash);
     const evidence: VerificationEvidence = {
       cryptoVerdict:
         res.verdict === 'verified'
