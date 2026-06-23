@@ -19,7 +19,7 @@
 // verifier's verdict into our ADR-0019 gate decision.
 import { verifyMode, ATLAS_REGISTRY_URL } from '@shared/config/env';
 import { decideGate, SNAPSHOT_DECISION } from './verificationPolicy';
-import { serveVerify, RegistryUnavailableError } from './registryClient';
+import { serveVerify, RegistryUnavailableError, ArtifactNotFoundError } from './registryClient';
 import type { GateDecision, VerificationEvidence } from './verificationTypes';
 
 export interface VerifyArtifactGateInput {
@@ -66,8 +66,10 @@ export async function verifyArtifactGate(
     };
   }
 
-  // ATLAS_REGISTRY_URL is guaranteed present when verifyMode() resolves to 'serve'
-  // (env.assertVerifyConfig enforces the invariant). Guard defensively all the same.
+  // ATLAS_REGISTRY_URL is present whenever verifyMode() resolved to 'serve' (a
+  // missing URL resolves to 'wasm' instead, handled above). The build-time assert
+  // in next.config.mjs fails the build on the misconfig; this is the runtime
+  // fail-closed backstop if that is ever bypassed.
   if (!ATLAS_REGISTRY_URL) {
     return {
       status: 'blocked',
@@ -88,6 +90,15 @@ export async function verifyArtifactGate(
     };
     return decideGate(evidence);
   } catch (err) {
+    // 404 first: the registry answered, the hash just is not registered. Surface
+    // the specific reason rather than collapsing it into 'registry unavailable'.
+    if (err instanceof ArtifactNotFoundError) {
+      return {
+        status: 'blocked',
+        reason: 'not_found',
+        detail: 'Artifact hash is not registered in the registry — blocked (ADR-0019).',
+      };
+    }
     if (err instanceof RegistryUnavailableError) {
       return {
         status: 'blocked',

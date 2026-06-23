@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  ArtifactNotFoundError,
   RegistryUnavailableError,
   serveHealth,
   serveVerify,
@@ -93,6 +94,29 @@ describe('serveVerify — transports a ke serve /verify response (no real verifi
     await expect(serveVerify(BASE, 'd'.repeat(64))).rejects.toBeInstanceOf(
       RegistryUnavailableError,
     );
+  });
+
+  it('throws ArtifactNotFoundError on HTTP 404 (registry answered; artifact is not registered)', async () => {
+    // A 404 is semantically distinct from an unreachable registry: the server
+    // responded, the hash just is not in it. The gateway surfaces this as a
+    // specific 'not_found' block, not a generic 'registry unavailable'.
+    const fetchMock = vi.fn(async () =>
+      jsonResponse({ error: 'not_found', detail: 'no such hash' }, { ok: false, status: 404 }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(serveVerify(BASE, '0'.repeat(64))).rejects.toBeInstanceOf(ArtifactNotFoundError);
+  });
+
+  it('ArtifactNotFoundError is NOT a RegistryUnavailableError (the gateway must branch on it first)', async () => {
+    const fetchMock = vi.fn(async () =>
+      jsonResponse({ error: 'not_found' }, { ok: false, status: 404 }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const err = await serveVerify(BASE, '0'.repeat(64)).catch((e) => e);
+    expect(err).toBeInstanceOf(ArtifactNotFoundError);
+    expect(err).not.toBeInstanceOf(RegistryUnavailableError);
   });
 
   it('throws RegistryUnavailableError when the fetch rejects (network error)', async () => {

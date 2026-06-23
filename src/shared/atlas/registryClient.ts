@@ -32,6 +32,19 @@ export class RegistryUnavailableError extends Error {
   }
 }
 
+/**
+ * Thrown on HTTP 404 from `/verify`: the registry ANSWERED, the hash just is not
+ * registered (cannot verify bytes that do not exist — see consumer-serve-contract).
+ * Deliberately NOT a subclass of RegistryUnavailableError: the gateway branches on
+ * it FIRST to surface a specific 'not_found' block rather than 'registry unavailable'.
+ */
+export class ArtifactNotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ArtifactNotFoundError';
+  }
+}
+
 const DEFAULT_TIMEOUT_MS = 5000;
 
 function joinUrl(baseUrl: string, path: string): string {
@@ -98,6 +111,12 @@ export async function serveVerify(
     );
   } finally {
     clearTimeout(timer);
+  }
+
+  if (res.status === 404) {
+    throw new ArtifactNotFoundError(
+      'ke serve /verify returned 404 — the artifact hash is not registered.',
+    );
   }
 
   if (!res.ok) {
