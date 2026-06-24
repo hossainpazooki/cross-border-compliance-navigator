@@ -15,7 +15,7 @@ import {
   type ArtifactProvenance,
 } from '@shared/atlas/provenance';
 import { useArtifactVerification } from '@shared/atlas/useArtifactVerification';
-import type { GateDecision } from '@shared/atlas/verificationTypes';
+import { VerificationChip } from './VerificationChip';
 import { useSessionStore } from '@features/live-session';
 import { JURISDICTIONS } from '@/types/common';
 
@@ -146,46 +146,6 @@ function RegimeProvenanceCard({ regimeId }: { regimeId: string }) {
       </CardContent>
     </Card>
   );
-}
-
-/**
- * Verification status chip — drives off the ADR-0019 gate decision.
- *
- *   unverified -> "Not verified (snapshot)" amber (flag off; today's honest default)
- *   verifying  -> "Verifying…"
- *   allowed    -> "Verified · Published" green (+ test-key note when applicable)
- *   blocked    -> red "Blocked: <reason>" with detail title
- *
- * Additive to the existing row; the snapshot disclosure + "lifecycle unknown"
- * line still carry the honesty boundary.
- */
-function VerificationChip({ decision }: { decision: GateDecision }) {
-  switch (decision.status) {
-    case 'unverified':
-      return (
-        <Badge variant="warning" size="sm" title={decision.detail}>
-          Not verified (snapshot)
-        </Badge>
-      );
-    case 'verifying':
-      return (
-        <Badge variant="info" size="sm">
-          Verifying…
-        </Badge>
-      );
-    case 'allowed':
-      return (
-        <Badge variant="success" size="sm">
-          Verified · Published{decision.testKey ? ' (test key)' : ''}
-        </Badge>
-      );
-    case 'blocked':
-      return (
-        <Badge variant="error" size="sm" title={decision.detail}>
-          Blocked: {decision.reason}
-        </Badge>
-      );
-  }
 }
 
 function ArtifactRow({ artifact: a }: { artifact: ArtifactProvenance }) {

@@ -15,10 +15,12 @@ import type { RegistryStatus } from '../verificationTypes';
 // so the gateway's `instanceof` check is exercised faithfully.
 const h = vi.hoisted(() => {
   class RegistryUnavailableErrorMock extends Error {}
+  class ArtifactNotFoundErrorMock extends Error {}
   return {
     state: { mode: 'off' as 'off' | 'serve' | 'wasm', url: 'https://registry.example' as string | undefined },
     serveVerifyMock: vi.fn<(...args: unknown[]) => Promise<ServeVerifyResponse>>(),
     RegistryUnavailableErrorMock,
+    ArtifactNotFoundErrorMock,
   };
 });
 
@@ -36,10 +38,12 @@ vi.mock('@shared/config/env', () => ({
 vi.mock('../registryClient', () => ({
   serveVerify: (...args: unknown[]) => h.serveVerifyMock(...args),
   RegistryUnavailableError: h.RegistryUnavailableErrorMock,
+  ArtifactNotFoundError: h.ArtifactNotFoundErrorMock,
 }));
 
 const serveVerifyMock = h.serveVerifyMock;
 const RegistryUnavailableErrorMock = h.RegistryUnavailableErrorMock;
+const ArtifactNotFoundErrorMock = h.ArtifactNotFoundErrorMock;
 
 // Import AFTER mocks are registered.
 import { verifyArtifactGate } from '../verificationGateway';
@@ -76,7 +80,9 @@ describe('verifyArtifactGate — mode routing (mocked verifier)', () => {
     serveVerifyMock.mockResolvedValue(serveResponse('verified', 'Published'));
     const decision = await verifyArtifactGate({ hash: 'deadbeef', isTestKey: false });
     expect(decision).toEqual({ status: 'allowed', testKey: false });
-    expect(serveVerifyMock).toHaveBeenCalledWith('https://registry.example', 'deadbeef');
+    // Verify goes through the SAME-ORIGIN proxy base, not the registry origin
+    // directly (ke serve has no CORS); the proxy forwards server-side.
+    expect(serveVerifyMock).toHaveBeenCalledWith('/atlas', 'deadbeef');
   });
 
   it("carries isTestKey through into an allowed decision (mode 'serve')", async () => {
@@ -126,6 +132,17 @@ describe('verifyArtifactGate — mode routing (mocked verifier)', () => {
     if (decision.status === 'blocked') {
       expect(decision.reason).toBe('crypto_rejected');
       expect(decision.detail).toBe('rejected');
+    }
+  });
+
+  it("maps ArtifactNotFoundError (404) to blocked 'not_found' (mode 'serve')", async () => {
+    h.state.mode = 'serve';
+    serveVerifyMock.mockRejectedValue(new ArtifactNotFoundErrorMock('404'));
+    const decision = await verifyArtifactGate({ hash: 'deadbeef', isTestKey: false });
+    expect(decision.status).toBe('blocked');
+    if (decision.status === 'blocked') {
+      expect(decision.reason).toBe('not_found');
+      expect(decision.detail).toMatch(/not (found|registered)/i);
     }
   });
 

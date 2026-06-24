@@ -31,7 +31,7 @@ export function SpecialistsRow({ ruleId }: SpecialistsRowProps) {
                 'flex items-center gap-1.5 rounded border px-2 py-1 text-xs transition-colors',
                 isWoken
                   ? 'border-emerald-700 bg-emerald-950/40 text-emerald-200'
-                  : 'border-slate-800 text-slate-500'
+                  : 'border-slate-800 text-slate-400'
               )}
             >
               <span
@@ -46,7 +46,7 @@ export function SpecialistsRow({ ruleId }: SpecialistsRowProps) {
           );
         })}
       </div>
-      <p className="mt-1 text-[10px] text-slate-500">
+      <p className="mt-1 text-[10px] text-slate-400">
         wake state derived from rule namespace — tasking lives backend-side
       </p>
     </div>

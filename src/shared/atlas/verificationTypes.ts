@@ -19,6 +19,7 @@ export interface VerificationEvidence {
 export type GateBlockReason =
   | 'crypto_rejected' // signature/hash verify failed
   | 'not_published' // registry state is Deprecated/Revoked (crypto may be valid) -> still blocked
+  | 'not_found' // registry answered 404 — the artifact hash is not registered
   | 'registry_unknown'; // registry unavailable / Unknown -> blocked (fail-closed)
 
 // The COMPASS-side decision. 'unverified' is DISTINCT from 'blocked':

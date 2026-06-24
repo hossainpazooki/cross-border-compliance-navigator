@@ -7,6 +7,22 @@
 // There is intentionally NO WebSocket rewrite — the WS endpoint is reached
 // directly via NEXT_PUBLIC_WS_BASE_URL, never proxied through Next.
 
+// Build-time assert (node-only; never shipped to the browser bundle): if live
+// ATLAS verification is switched on, the registry URL MUST be set — otherwise the
+// only available path is the still-blocked in-browser WASM seam, which would make
+// every pack read as blocked. Fail the build loudly rather than ship a silently
+// dead-verify deployment. Mirrors src/shared/config/env.ts assertVerifyConfig()
+// (the runtime still fails CLOSED with a clear message if this is bypassed).
+if (
+  process.env.NEXT_PUBLIC_USE_WASM_VERIFY === 'true' &&
+  !process.env.NEXT_PUBLIC_ATLAS_REGISTRY_URL
+) {
+  throw new Error(
+    'NEXT_PUBLIC_USE_WASM_VERIFY=true requires NEXT_PUBLIC_ATLAS_REGISTRY_URL ' +
+      '(the ke-cli serve base URL). Unset it to keep snapshot mode, or point it at a registry.',
+  );
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
