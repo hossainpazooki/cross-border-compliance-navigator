@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
@@ -36,9 +36,16 @@ function inputsFor(kewPath: string) {
 }
 
 describe.skipIf(!present)('in-browser WASM verifier (real @platform/atlas-artifact)', () => {
-  // The nodejs-target build is CommonJS; load it via createRequire anchored on the
-  // package path itself (the repo bans `import.meta` under Next — no-restricted-syntax).
-  const realVerify = createRequire(PKG_NODE)(PKG_NODE).verify_artifact as ArtifactVerifyFn;
+  // Load INSIDE beforeAll, not at describe-body top level: Vitest still executes the
+  // describe callback during collection even when skipIf is true, so a top-level
+  // require() would throw MODULE_NOT_FOUND in CI (no sibling ATLAS checkout) instead
+  // of skipping. beforeAll only runs when the suite is NOT skipped. The nodejs-target
+  // build is CommonJS; createRequire is anchored on the package path itself (the repo
+  // bans `import.meta` under Next — no-restricted-syntax).
+  let realVerify: ArtifactVerifyFn;
+  beforeAll(() => {
+    realVerify = createRequire(PKG_NODE)(PKG_NODE).verify_artifact as ArtifactVerifyFn;
+  });
 
   it('a Published golden (rule_reserve_assets) verifies -> the gate ALLOWS it', () => {
     const decision = verifyWithWasm(

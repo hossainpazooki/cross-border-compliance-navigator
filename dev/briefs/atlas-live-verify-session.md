@@ -7,7 +7,12 @@
 > to the ATLAS consumer contract `../regulatory-rule-engine/docs/consumer-serve-contract.md`
 > and the cross-repo handoff `../regulatory-rule-engine/dev/briefs/compass-consumer-state-and-gate5-rewire.md`.
 
-## Status at end of session
+## Status
+
+**Merged** — PR #2 (`feat/atlas-live-verify` → `feat/next15-phase-c1`, merge `d5a2b68`); all
+checks green including the Playwright preview E2E (see "CI hardening" below). The
+sections below describe the branch as authored; the CI-hardening addendum at the end
+records the follow-up that got the preview suite green.
 
 Branch `feat/atlas-live-verify` (stacked on `feat/next15-phase-c1`). Gate green at
 the tip — independently re-run, not self-reported:
@@ -120,3 +125,37 @@ ATLAS_LIVE_E2E=1 PLAYWRIGHT_BASE_URL=http://localhost:5173 \
 3. **Out of scope (noted):** per-attestation role surfacing (server verdict already
    encodes attestation policy; COMPASS is consumer-only), verification-failure audit
    logging, perf caching, production-key rotation.
+
+## CI hardening (post-merge addendum)
+
+The `playwright-preview.yml` workflow runs `e2e/live-session.spec.ts` against the
+Vercel preview; it surfaced layered failures, each fixed (all 5 E2E verified passing
+against a **production build** — the faithful Vercel repro):
+
+1. **Vercel Deployment Protection** served a "Log in to Vercel" wall to Playwright.
+   Fixed by sending `x-vercel-protection-bypass` (+ set-bypass-cookie) from
+   `VERCEL_AUTOMATION_BYPASS_SECRET` (`playwright.config.ts` + the workflow); the
+   secret is set in Vercel ("Protection Bypass for Automation") + GitHub repo secrets.
+2. **WS test** asserted a WebSocket, but Vercel uses **SSE** (no WS upgrade through
+   the edge). Rewrote it transport-agnostic (race `websocket` event vs a
+   `/v2/stream/trade/` request).
+3. **`main` selector** — `/live` routes render *outside* `App.tsx`'s `<main>`; the
+   test now asserts the `/no active session/i` placeholder (the original
+   `main,[role=main],body` only broke on Vercel's *login-wall* `<main>`).
+4. **axe contrast** — `text-slate-500` (#64748b) on dark is < 4.5:1; bumped to
+   `text-slate-400` in BoardBar / SpecialistsRow / RationaleStream / ThresholdFeed.
+5. **API base default → same-origin.** `API_BASE_URL` defaulted to
+   `http://localhost:8787`, so an unconfigured preview POSTed `/v2/intents` to a dead
+   localhost. Defaulting to same-origin (`''`) makes the preview call its own in-tree
+   handlers with no per-deploy env (`dev:web`/`.env.local` still pin `:8787`).
+
+**Two repro traps (cost real time, recorded so they aren't re-hit):** `next dev` is
+**not** a faithful Vercel repro — `reactStrictMode` double-invokes effects in dev, so
+`LiveSession`'s `closeSession`-on-unmount cleanup closes the just-opened session
+("No active session"), and cold-compile blows the 3 s mount budget; use
+`next build && next start`. And **`.env.local` pins `NEXT_PUBLIC_API_BASE_URL=:8787`**
+(loaded by `next build`), so to simulate a Vercel-unset build locally you must build
+with `NEXT_PUBLIC_API_BASE_URL=` (empty, to override `.env.local`).
+
+Residual: the `#1` cold-start `< 3 s` mount budget could flake on a genuinely cold
+Vercel lambda — relax that single budget if it does, it's not a correctness bug.
