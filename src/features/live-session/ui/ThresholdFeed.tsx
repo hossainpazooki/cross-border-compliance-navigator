@@ -41,7 +41,7 @@ export function ThresholdFeed({ intentId, onSelectCrossing, selectedCrossingId }
       >
         <div className="space-y-2">
           <p className="text-slate-300">Waiting for first crossing…</p>
-          <p className="text-xs text-slate-500">connection: {connection}</p>
+          <p className="text-xs text-slate-400">connection: {connection}</p>
         </div>
       </div>
     );

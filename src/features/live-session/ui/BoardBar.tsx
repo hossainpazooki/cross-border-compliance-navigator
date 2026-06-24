@@ -83,7 +83,7 @@ export function BoardBar({ intentId, deskName, memberName }: BoardBarProps) {
       <div className="flex flex-wrap items-center justify-between gap-3 p-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-medium uppercase tracking-wider text-slate-500">
+            <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400">
               Board
             </span>
             {deskName && (
@@ -92,7 +92,7 @@ export function BoardBar({ intentId, deskName, memberName }: BoardBarProps) {
                 className="inline-flex items-center gap-1 rounded-full border border-slate-700 bg-slate-800/60 px-2 py-0.5 text-[10px] text-slate-300"
               >
                 <span className="font-medium text-slate-200">{deskName}</span>
-                {memberName && <span className="text-slate-500">· {memberName}</span>}
+                {memberName && <span className="text-slate-400">· {memberName}</span>}
               </span>
             )}
             <h2 className="text-base font-semibold text-white">
@@ -135,7 +135,7 @@ export function BoardBar({ intentId, deskName, memberName }: BoardBarProps) {
             )}
           >
             <span aria-hidden>{signedOff ? '✓' : '◻'}</span> Conflict sign-off
-            <span className="text-[9px] text-slate-500">(local)</span>
+            <span className="text-[9px] text-slate-400">(local)</span>
           </button>
         </div>
 
