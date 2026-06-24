@@ -38,17 +38,38 @@ async function createLiveSession(page: Page): Promise<string> {
 test('live-session page mounts within cold-start tolerance', async ({ page }) => {
   const mountStart = Date.now();
   await page.goto(`/live/${TEST_INTENT_ID}`);
-  // The app shell renders a single <main> (App.tsx). `.first()` keeps this from a
-  // strict-mode violation if a layout ever nests another main/body match.
-  await expect(page.locator('main').first()).toBeVisible({ timeout: 3_000 });
+  // The /live routes render their own full-bleed layout (no app-shell <main>), and
+  // this fixed intent id has no open session, so the SPA mounts the placeholder.
+  // Asserting that copy proves React actually mounted (not just that <body> exists),
+  // and is robust against Vercel's own login-wall <main> under strict mode.
+  await expect(page.getByText(/no active session/i)).toBeVisible({ timeout: 3_000 });
   expect(Date.now() - mountStart).toBeLessThan(3_000);
 });
 
-test('websocket connects within 10s after going live', async ({ page }) => {
-  const wsPromise = page.waitForEvent('websocket', { timeout: 10_000 });
+test('threshold stream connects within 12s after going live (WS or SSE transport)', async ({
+  page,
+}) => {
+  // Transport is deployment-dependent (useThresholdStream): WebSocket when
+  // NEXT_PUBLIC_WS_BASE_URL is set (local `dev:all`), otherwise SSE same-origin
+  // (Vercel preview — no WS can be upgraded through the edge). Assert that the
+  // threshold stream connects over EITHER, rather than a WS that does not exist
+  // on Vercel. Both listeners are armed before going live; each resolves to its
+  // URL or null on timeout, so exactly one (the active transport) is non-null.
+  const wsUrl = page
+    .waitForEvent('websocket', { timeout: 12_000 })
+    .then((ws) => ws.url())
+    .catch(() => null);
+  const sseUrl = page
+    .waitForRequest((req) => /\/v2\/stream\/trade\//.test(req.url()), { timeout: 12_000 })
+    .then((req) => req.url())
+    .catch(() => null);
+
   await createLiveSession(page);
-  const ws = await wsPromise;
-  expect(ws.url()).toMatch(/(\/v2\/ws\/trade\/|intent_id=)/);
+
+  const [ws, sse] = await Promise.all([wsUrl, sseUrl]);
+  const url = ws ?? sse;
+  expect(url, 'a WS or SSE threshold-stream connection').toBeTruthy();
+  expect(url as string).toMatch(/\/v2\/(ws|stream)\/trade\//);
 });
 
 test('threshold card appears within 30s from reference-backend replay', async ({ page }) => {

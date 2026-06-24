@@ -11,9 +11,16 @@
  * All five former `import.meta.env.VITE_*` read sites now import from here.
  */
 
-/** REST origin for /v2/intents, /audit/{id}, /health, etc. */
+/**
+ * REST origin for /v2/intents, /audit/{id}, /health, etc. Defaults to SAME-ORIGIN
+ * ('') so a deployed app (Vercel preview/prod) calls its own in-tree route handlers
+ * with NO per-deploy config — and when BACKEND_ORIGIN is set, next.config rewrites
+ * forward /v2 server-side, so the client still calls same-origin. `dev:web` and
+ * `.env.local` set `http://localhost:8787` explicitly to hit the standalone
+ * @platform/reference-backend; `dev:all` relies on that, not on this default.
+ */
 export const API_BASE_URL: string =
-  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8787';
+  process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
 /**
  * Live-session WebSocket base. Unset => the stream falls back to SSE/HTTP
