@@ -61,6 +61,13 @@ jobs:
         if: steps.preview.outputs.url != ''
         env:
           PLAYWRIGHT_BASE_URL: ${{ steps.preview.outputs.url }}
+          # Bypass Vercel Deployment Protection on the preview. Requires:
+          #  - Vercel: Project → Settings → Deployment Protection → enable
+          #    "Protection Bypass for Automation" and copy the generated secret.
+          #  - GitHub: add it as the repo secret VERCEL_AUTOMATION_BYPASS_SECRET.
+          # Without it, a protected preview serves Vercel's login wall and every
+          # test fails (the config omits the header when the secret is unset).
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: npx playwright test --reporter=github
 
       - name: Upload Playwright report

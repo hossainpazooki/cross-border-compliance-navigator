@@ -38,7 +38,9 @@ async function createLiveSession(page: Page): Promise<string> {
 test('live-session page mounts within cold-start tolerance', async ({ page }) => {
   const mountStart = Date.now();
   await page.goto(`/live/${TEST_INTENT_ID}`);
-  await expect(page.locator('main, [role="main"], body')).toBeVisible({ timeout: 3_000 });
+  // The app shell renders a single <main> (App.tsx). `.first()` keeps this from a
+  // strict-mode violation if a layout ever nests another main/body match.
+  await expect(page.locator('main').first()).toBeVisible({ timeout: 3_000 });
   expect(Date.now() - mountStart).toBeLessThan(3_000);
 });
 
