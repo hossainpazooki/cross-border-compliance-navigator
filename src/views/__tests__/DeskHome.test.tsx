@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { DeskHome } from '../DeskHome';
 import { useDeskStore } from '@app/stores';
@@ -9,10 +10,18 @@ import { DESKS } from '@shared/config/desks';
 import type { TradeIntent } from '@platform/contracts';
 
 function renderHome() {
+  // Mirror app/providers.tsx options. The verification hook is a React Query
+  // hook (it fires no query in snapshot mode, but the component still calls
+  // useQuery, which requires a provider in scope).
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { staleTime: 1000 * 60 * 5, retry: 1 } },
+  });
   return render(
-    <MemoryRouter>
-      <DeskHome />
-    </MemoryRouter>
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>
+        <DeskHome />
+      </MemoryRouter>
+    </QueryClientProvider>
   );
 }
 
@@ -59,6 +68,17 @@ describe('DeskHome', () => {
     // Lifecycle is honestly NOT established by the static snapshot (brief §3 #11).
     expect(screen.getByText(/Lifecycle state .* is NOT established/i)).toBeInTheDocument();
     expect(screen.getAllByText(/lifecycle unknown/i).length).toBeGreaterThan(0);
+  });
+
+  it('shows the "Not verified (snapshot)" chip for every signed artifact in default (flag off) mode', () => {
+    renderHome();
+    // Flag off -> verifyMode() is 'off' -> the hook returns SNAPSHOT_DECISION
+    // synchronously and fires no query. Each signed artifact gets the amber chip.
+    const chips = screen.getAllByText(/Not verified \(snapshot\)/i);
+    expect(chips.length).toBeGreaterThan(0);
+    // One chip per signed artifact (the same artifacts that carry a test-key badge).
+    const testKeyBadges = screen.getAllByText(/test-key: test-fixed-seed-1/);
+    expect(chips.length).toBe(testKeyBadges.length);
   });
 
   it('renders the member roster with the active member highlighted', () => {

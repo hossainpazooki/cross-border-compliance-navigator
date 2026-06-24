@@ -14,6 +14,8 @@ import {
   LIFECYCLE_DISCLOSURE,
   type ArtifactProvenance,
 } from '@shared/atlas/provenance';
+import { useArtifactVerification } from '@shared/atlas/useArtifactVerification';
+import { VerificationChip } from './VerificationChip';
 import { useSessionStore } from '@features/live-session';
 import { JURISDICTIONS } from '@/types/common';
 
@@ -147,19 +149,27 @@ function RegimeProvenanceCard({ regimeId }: { regimeId: string }) {
 }
 
 function ArtifactRow({ artifact: a }: { artifact: ArtifactProvenance }) {
+  const { decision } = useArtifactVerification({
+    hash: a.artifact_hash_hex,
+    isTestKey: a.is_test_key,
+  });
+
   return (
     <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="font-mono text-sm text-slate-200">{a.artifact_id}</span>
-        {a.signed ? (
-          <Badge variant="warning" size="sm">
-            test-key: {a.signer_key_id}
-          </Badge>
-        ) : (
-          <Badge variant="default" size="sm">
-            unsigned ({a.artifact_kind})
-          </Badge>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          <VerificationChip decision={decision} />
+          {a.signed ? (
+            <Badge variant="warning" size="sm">
+              test-key: {a.signer_key_id}
+            </Badge>
+          ) : (
+            <Badge variant="default" size="sm">
+              unsigned ({a.artifact_kind})
+            </Badge>
+          )}
+        </div>
       </div>
       <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400">
         <span>

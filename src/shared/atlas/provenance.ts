@@ -1,4 +1,5 @@
 import snapshot from '@shared/config/atlas-provenance.json';
+import { USE_WASM_VERIFY } from '@shared/config/env';
 
 /**
  * Typed loader over the committed ATLAS provenance snapshot
@@ -36,9 +37,11 @@ export const LIFECYCLE_DISCLOSURE =
  * the canonical registry view and verify in-browser (incl. revoked-pack
  * flagging) instead of this vendored snapshot. Default off; the snapshot path is
  * the pre-publish stopgap. Mirrors ATLAS's `VITE_USE_WASM_PREVIEW` discipline.
+ *
+ * Re-exported from the single env read site (`@shared/config/env`) so this
+ * module never reads `process.env` directly.
  */
-export const WASM_VERIFY_ENABLED =
-  (process.env as Record<string, string | undefined>).NEXT_PUBLIC_USE_WASM_VERIFY === 'true';
+export const WASM_VERIFY_ENABLED = USE_WASM_VERIFY;
 
 export interface AttestationProvenance {
   attestation_type: string;

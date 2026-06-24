@@ -11,7 +11,7 @@ export function RationaleStream({ intentId, crossingId }: RationaleStreamProps) 
 
   if (!rationale) {
     return (
-      <div className="text-sm text-slate-500" aria-live="polite">
+      <div className="text-sm text-slate-400" aria-live="polite">
         Waiting for rationale…
       </div>
     );
