@@ -38,7 +38,7 @@ COMPASS is the frontend for an institutional cross-border digital-asset complian
 
 The non-deterministic judgment in stack 2 — interpreting a crossing, resolving jurisdiction conflicts, drafting rationale, assessing run-time risk — is performed by an **org of specialist agents** ([Roles & agents](#roles--agents)). The deterministic engine verifies; the human is the apex.
 
-> **Advanced state (this tree).** The app has completed its **Vite → Next 15 App Router** migration (self-hosted route handlers for `/v2/intents`, `/v2/stream/trade/[id]`, `/audit/[id]`, `/health`), ships the **Desk MVP** ([Desks](#desks)), and surfaces **ATLAS artifact provenance** as a consumer ([ATLAS provenance](#atlas-provenance-consumer)). Gates are green: `typecheck` · `lint` · `188` tests · `next build`.
+> **Advanced state (this tree).** The app has completed its **Vite → Next 15 App Router** migration (self-hosted route handlers for `/v2/intents`, `/v2/stream/trade/[id]`, `/audit/[id]`, `/health`), ships the **Desk MVP** ([Desks](#desks)), and surfaces **ATLAS artifact provenance** as a consumer ([ATLAS provenance](#atlas-provenance-consumer)). Gates are green: `typecheck` · `lint` · `245` tests (+3 live-integration skipped) · `next build` · Playwright preview E2E.
 
 ---
 
@@ -180,9 +180,10 @@ COMPASS is a **verify-only consumer** of ATLAS (`regulatory-rule-engine`) rule a
 
 ### Live verification (gated, dormant)
 
-The verification layer is wired but **OFF by default** and stays dormant until `@platform/atlas-artifact` ships — nothing is cryptographically verified today; provenance is surfaced from the snapshot only.
+The verification layer is wired but **OFF by default** — with the flag off nothing is cryptographically verified and provenance is surfaced from the snapshot only.
 
-- **Flags.** `NEXT_PUBLIC_USE_WASM_VERIFY` (default unset = off) turns the layer on; `NEXT_PUBLIC_ATLAS_REGISTRY_URL` points at a `ke-cli serve` base URL. With the flag on **and** a registry URL set, COMPASS uses the HTTP **`serve`** path (`POST /verify`); with the flag on but no URL, it falls back to the in-browser **`wasm`** path, which is **intentionally blocked** pending the package publish.
+- **Flags.** `NEXT_PUBLIC_USE_WASM_VERIFY` (default unset = off) turns the layer on; `NEXT_PUBLIC_ATLAS_REGISTRY_URL` points at a `ke-cli serve` base URL. With the flag on **and** a registry URL set, COMPASS uses the HTTP **`serve`** path; with the flag on but no URL it falls back to the in-browser **`wasm`** path, which is **intentionally blocked** pending the `@platform/atlas-artifact` publish.
+- **Same-origin proxy (CORS).** `ke serve` sends no `Access-Control-*` headers, so the browser cannot call it cross-origin. The `serve` path therefore posts to a same-origin Next route handler, **`POST /atlas/verify`** (`app/atlas/verify/route.ts`), which forwards server-side to `ke serve`'s `/verify`. The HTTP path has been verified end-to-end against a live `serve-published-registry.sh` (Published ⇒ verified/Published; non-Published ⇒ blocked; unknown hash ⇒ 404 → `not_found`). The in-browser WASM adapter (`wasmVerifier.ts`) is **dependency-injected** — it imports nothing from the unpublished package — and is proven against the real verifier in a guarded node harness.
 - **Fail-closed (ADR-0019).** The decision is `allowed` only when crypto verifies **and** `registry_state === 'Published'`. A rejected signature, a non-`Published` state, or an unavailable/`Unknown` registry all resolve to **blocked**. Flag off is a distinct `unverified` (snapshot) state — *no verification was attempted*, not a failure.
 - **Default behavior is unchanged.** With the flag off the DeskHome card renders exactly as before, now routed through the typed `unverified` status.
 
@@ -305,7 +306,7 @@ npm run dev        # web only, on http://localhost:5173
 npm run dev:all    # THE local deployment: web + reference backend together
 ```
 
-**The monorepo is its own deployment** — no external services. REST analysis features fall back to bundled demo responses (or run client-side via `@platform/engine`); the live session (with the Org panel) runs against the local reference backend, which implements the full contract — intent lifecycle, audit replay, and the complete envelope union including `lead_position` and `auditor_finding`. Fixtures are derived through the real engine, so streamed citations are grounded in actual `evaluateTree` traces. Point `VITE_API_URL` / `NEXT_PUBLIC_WS_BASE_URL` at a remote backend only when one exists — it must pass the conformance suite first.
+**The monorepo is its own deployment** — no external services. REST analysis features fall back to bundled demo responses (or run client-side via `@platform/engine`); the live session (with the Org panel) runs against the local reference backend, which implements the full contract — intent lifecycle, audit replay, and the complete envelope union including `lead_position` and `auditor_finding`. Fixtures are derived through the real engine, so streamed citations are grounded in actual `evaluateTree` traces. Point `NEXT_PUBLIC_API_BASE_URL` / `NEXT_PUBLIC_WS_BASE_URL` at a remote backend only when one exists — it must pass the conformance suite first.
 
 ---
 
@@ -383,17 +384,18 @@ npm run test:coverage
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `VITE_API_URL` | `http://localhost:8787` | REST base (navigate, decoder, counterfactual, `/v2/intents`, `/audit`). Set to the deployed origin in production. |
-| `NEXT_PUBLIC_WS_BASE_URL` | `ws://localhost:8787` | Live-session WebSocket base; the hook appends `/v2/ws/trade/{intent_id}`. |
+| `NEXT_PUBLIC_API_BASE_URL` | unset ⇒ **same-origin** | REST base (navigate, decoder, counterfactual, `/v2/intents`, `/audit`). Unset ⇒ the app calls its own in-tree handlers; `dev:web`/`.env.local` set `http://localhost:8787` for the standalone reference backend. |
+| `NEXT_PUBLIC_WS_BASE_URL` | unset ⇒ **SSE** | Live-session WebSocket base; the hook appends `/v2/ws/trade/{intent_id}`. Unset ⇒ no WS, the stream uses SSE same-origin (the Vercel default). |
 | `BACKEND_ORIGIN` | unset | When set, `next.config.mjs` same-origin-rewrites `/v2`, `/audit`, `/health` to this origin (deploy-time; bound at build). |
-| `NEXT_PUBLIC_USE_WASM_VERIFY` | `false` | Rewire seam — when on (post-Gate-5), verify ATLAS artifacts in-browser against the live registry instead of the vendored snapshot. |
+| `NEXT_PUBLIC_USE_WASM_VERIFY` | `false` | Turns on the fail-closed ATLAS verification layer (ADR-0019). Off ⇒ snapshot mode. On + `NEXT_PUBLIC_ATLAS_REGISTRY_URL` ⇒ HTTP `serve` path via the `/atlas/verify` proxy; on without it ⇒ the (blocked) in-browser WASM seam. |
+| `NEXT_PUBLIC_ATLAS_REGISTRY_URL` | unset | `ke-cli serve` base URL for the live-verify `serve` path (used by the server-side `/atlas/verify` proxy). |
 
 ---
 
 ## Roadmap
 
 - **Backend agent runtime.** The specialist / lead / auditor LLM agents are future backend work, mirroring `orchestratorRouting.ts`'s `rule_id` table so frontend routing and backend tasking never diverge. The strategic production host is ke-workbench's Gate-5 `ke serve` (the `regulatory-rule-engine` repo) — whatever serves it must pass the conformance suite.
-- **ATLAS live verification (post-Gate-5).** Flip `NEXT_PUBLIC_USE_WASM_VERIFY` once `@platform/atlas-artifact` ships to npm and `ke serve` is reachable: in-browser verify + **revoked-pack flagging** (non-`Published` blocked even with valid crypto; fail-closed on `unknown`) — see ATLAS `ADR-0019` and `dev/briefs/compass-consumer-state-and-gate5-rewire.md`.
+- **ATLAS live verification.** The fail-closed layer (ADR-0019) is **wired and dormant** — the HTTP `serve` path (via the `/atlas/verify` proxy) is verified against a live `ke serve`. Remaining: (a) publish `@platform/atlas-artifact` to enable the in-browser WASM path (the adapter is dependency-injected and proven, but its real import is the gated step); (b) a browser **green** "Verified — Published" render needs registry/snapshot hash alignment (the snapshot's `gen-fixtures` goldens aren't registry-publishable). See `dev/briefs/atlas-live-verify-session.md`, ATLAS `ADR-0019`, and `compass-consumer-state-and-gate5-rewire.md`.
 - **Deploy wiring.** Point `BACKEND_ORIGIN` at the `regulatory-rule-engine` ALB and verify same-origin streaming through the edge ([`docs/unified-plan.md`](docs/unified-plan.md)).
 
 ---
