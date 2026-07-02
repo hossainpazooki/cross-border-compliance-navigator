@@ -17,6 +17,12 @@ import { execSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import {
+  EXPECTED_CANON,
+  PINNED_ARTIFACTS,
+  validateSnapshotArtifacts,
+} from '../../src/shared/atlas/snapshotContract';
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const ATLAS_REPO = process.env.ATLAS_REPO
@@ -25,28 +31,12 @@ const ATLAS_REPO = process.env.ATLAS_REPO
 const ARTIFACTS_DIR = path.join(ATLAS_REPO, 'fixtures', 'artifacts');
 const OUT_FILE = path.join(REPO_ROOT, 'src', 'shared', 'config', 'atlas-provenance.json');
 
-// Recompute-check constants, copied from ATLAS GOLDEN.md. The sync FAILS if the
-// parsed ledger disagrees — provenance honesty is enforced, not assumed.
-const GOLDEN_EXPECTED: Record<string, { hash: string; envelopeLen: number }> = {
-  rule_reserve_assets: {
-    hash: 'bcebbd1f89619efbab253e9fb463fa089b0d487a28064006ec6fd7a43a0ccb87',
-    envelopeLen: 862,
-  },
-  rule_significant_thresholds: {
-    hash: 'a0a06ee4cd592d557d42e9f1a0c5177a64a4c080f0677ef73a706542798f66bf',
-    envelopeLen: 598,
-  },
-};
-
-// The ATLAS canon triplet this snapshot is pinned to (ADR 0013: 0.4.0 /
-// ke-canon-4 / postcard-1). Per the Gate-4 platform-consumption brief §5, a
-// triplet bump is a different contract and must regenerate the snapshot — so the
-// sync asserts every signed artifact reports this exact triplet and fails on drift.
-const EXPECTED_CANON = {
-  ir_schema_version: '0.4.0',
-  codec_version: 'postcard-1',
-  canonicalization_version: 'ke-canon-4',
-};
+// The pinned artifact kinds, canon triplet, GOLDEN hashes, and validators are the
+// single source of truth in src/shared/atlas/snapshotContract.ts — shared with the
+// runtime loader (provenance.ts) and the Vitest tripwire. This script enforces that
+// contract at vendor time, so a breaking ATLAS change (a new kind, a canon bump, or
+// regenerated golden hashes) fails loudly here instead of silently vendoring.
+// (EXPECTED_CANON and PINNED_ARTIFACTS are imported above.)
 
 // Registry lifecycle state (Published/Deprecated/Revoked) is NOT in the static
 // golden fixtures — it lives only in the live registry (ke-cli serve, ATLAS
@@ -159,7 +149,7 @@ async function main(): Promise<void> {
   const golden = parseGolden(await readFile(path.join(ARTIFACTS_DIR, 'GOLDEN.md'), 'utf8'));
 
   // Recompute check: the parsed ledger must match the pinned constants.
-  for (const [id, expected] of Object.entries(GOLDEN_EXPECTED)) {
+  for (const [id, expected] of Object.entries(PINNED_ARTIFACTS)) {
     const got = golden[id];
     if (!got || got.hash !== expected.hash || got.envelopeLen !== expected.envelopeLen) {
       throw new Error(
@@ -183,7 +173,18 @@ async function main(): Promise<void> {
 
     const sigPath = path.join(dir, 'signature.json');
     const attPath = path.join(dir, 'attestations.json');
-    const signed = (await exists(sigPath)) && Boolean(golden[id]);
+    const hasSig = await exists(sigPath);
+    const hasGolden = Boolean(golden[id]);
+    // A signature without a GOLDEN hash (or vice versa) is inconsistent — refuse to
+    // silently downgrade it to unsigned (the old `hasSig && hasGolden` did exactly
+    // that, stripping an artifact's crypto identity with no signal).
+    if (hasSig !== hasGolden) {
+      throw new Error(
+        `${id}: signature.json ${hasSig ? 'present' : 'absent'} but GOLDEN.md hash ${hasGolden ? 'present' : 'absent'} — ` +
+          `refusing to vendor a half-signed artifact. Add or remove the GOLDEN row and the signature together.`
+      );
+    }
+    const signed = hasSig && hasGolden;
 
     let signerKeyId: string | null = null;
     if (await exists(sigPath)) {
@@ -225,21 +226,17 @@ async function main(): Promise<void> {
     });
   }
 
-  // Canon-triplet drift guard (brief §5): a triplet bump is a different contract.
-  for (const a of artifacts) {
-    if (!a.signed) continue;
-    if (
-      a.ir_schema_version !== EXPECTED_CANON.ir_schema_version ||
-      a.codec_version !== EXPECTED_CANON.codec_version ||
-      a.canonicalization_version !== EXPECTED_CANON.canonicalization_version
-    ) {
-      throw new Error(
-        `Canon-triplet drift for ${a.artifact_id}: got ` +
-          `${a.ir_schema_version}/${a.codec_version}/${a.canonicalization_version}, expected ` +
-          `${EXPECTED_CANON.ir_schema_version}/${EXPECTED_CANON.codec_version}/${EXPECTED_CANON.canonicalization_version}. ` +
-          `Regenerate the snapshot + re-pin consumers for the new triplet (brief §5).`
-      );
-    }
+  // Contract guard (shared with the runtime loader + the Vitest tripwire): every
+  // artifact must be a known kind on the pinned canon triplet, and every signed
+  // artifact must match its pinned GOLDEN hash + envelope length. Unlike the old
+  // signed-only canon check, this covers unsigned artifacts too — a drifted
+  // PolicyBundle no longer slips through — and rejects an unknown kind (a new ATLAS
+  // artifact type) instead of vendoring it blind.
+  const violations = validateSnapshotArtifacts(artifacts, PINNED_ARTIFACTS);
+  if (violations.length > 0) {
+    throw new Error(
+      `ATLAS snapshot contract violations — refusing to vendor:\n  - ${violations.join('\n  - ')}`
+    );
   }
 
   const snapshot: ProvenanceSnapshot = {

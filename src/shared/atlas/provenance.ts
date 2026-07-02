@@ -1,5 +1,8 @@
 import snapshot from '@shared/config/atlas-provenance.json';
 import { USE_WASM_VERIFY } from '@shared/config/env';
+import type { ArtifactKind } from './snapshotContract';
+
+export { type ArtifactKind, isKnownArtifactKind } from './snapshotContract';
 
 /**
  * Typed loader over the committed ATLAS provenance snapshot
@@ -53,7 +56,8 @@ export interface AttestationProvenance {
 export interface ArtifactProvenance {
   artifact_id: string;
   regime_id: string;
-  artifact_kind: string;
+  /** Constrained to the kinds COMPASS knows how to consume; see snapshotContract. */
+  artifact_kind: ArtifactKind;
   signed: boolean;
   artifact_hash_hex: string | null;
   envelope_len: number | null;
