@@ -1,18 +1,48 @@
 {
-  "synced_at": "2026-06-14T16:22:39.628Z",
+  "synced_at": "2026-07-07T05:05:09.826Z",
   "atlas_repo": "..\\regulatory-rule-engine",
   "atlas_source": {
-    "atlas_commit": "fb4d467b272bafe2f82c3c4a08945d8693512dbb",
+    "atlas_commit": "a885e920d00c75c2805f6125ad6343170bbbbc81",
     "platform_corpus_commit": "f73b9403c88a7ab5d741b351dce085b6988b6ba7"
   },
   "canon_triplet": {
-    "ir_schema_version": "0.4.0",
+    "ir_schema_version": "0.5.0",
     "codec_version": "postcard-1",
-    "canonicalization_version": "ke-canon-4"
+    "canonicalization_version": "ke-canon-5"
   },
   "source": "fixtures/artifacts (Gate 4 Phase 1+2 golden ledger)",
   "note": "Provenance as published by ATLAS, vendored as a static snapshot — surfaced, NOT re-verified. Signatures/attestations use FIXED-SEED TEST KEYS (test-fixed-seed-1 / test-expert-fixed-seed-1), never production keys (not authoritative; refused in production per brief §3). registry_state is \"unknown\" for every entry: lifecycle (Published/Revoked) lives only in the live registry (ke-cli serve, ATLAS Gate 5), so this snapshot proves ORIGIN provenance, not current execution validity. Canonical consumption is the @platform/atlas-artifact WASM verifier (Gate-4-shipped, npm-publish pending) reading the registry view — this vendored snapshot is the pre-publish stopgap.",
   "artifacts": [
+    {
+      "artifact_id": "intentspec_payment",
+      "regime_id": "treasury_payments_v1",
+      "artifact_kind": "IntentSpec",
+      "signed": true,
+      "artifact_hash_hex": "c7a36959bfaafc03e0abfb86fce7e1c0c6efebc812b55f83313724c3d024dc51",
+      "envelope_len": 422,
+      "ir_schema_version": "0.5.0",
+      "codec_version": "postcard-1",
+      "canonicalization_version": "ke-canon-5",
+      "signer_key_id": "test-fixed-seed-1",
+      "is_test_key": true,
+      "effective_from": "2025-01-01",
+      "attestation_policy_version": "ap-1",
+      "registry_state": "unknown",
+      "attestations": [
+        {
+          "attestation_type": "SourceFidelity",
+          "signer_role": "DomainExpert",
+          "tsa_class": "Mock",
+          "claimed_time_unix": 1750000000
+        },
+        {
+          "attestation_type": "PublicationApproval",
+          "signer_role": "PublicationApprover",
+          "tsa_class": "Mock",
+          "claimed_time_unix": 1750000000
+        }
+      ]
+    },
     {
       "artifact_id": "policy_production_eu",
       "regime_id": "policy",
@@ -20,9 +50,9 @@
       "signed": false,
       "artifact_hash_hex": null,
       "envelope_len": null,
-      "ir_schema_version": "0.4.0",
+      "ir_schema_version": "0.5.0",
       "codec_version": "postcard-1",
-      "canonicalization_version": "ke-canon-4",
+      "canonicalization_version": "ke-canon-5",
       "signer_key_id": null,
       "is_test_key": false,
       "effective_from": "2024-06-30",
@@ -35,11 +65,11 @@
       "regime_id": "mica_2023",
       "artifact_kind": "RegimePack",
       "signed": true,
-      "artifact_hash_hex": "bcebbd1f89619efbab253e9fb463fa089b0d487a28064006ec6fd7a43a0ccb87",
-      "envelope_len": 862,
-      "ir_schema_version": "0.4.0",
+      "artifact_hash_hex": "13a414cf7f6b25c6b6049c0953a83ff5697044aabafbd44b87e87fc4ed90f8a9",
+      "envelope_len": 863,
+      "ir_schema_version": "0.5.0",
       "codec_version": "postcard-1",
-      "canonicalization_version": "ke-canon-4",
+      "canonicalization_version": "ke-canon-5",
       "signer_key_id": "test-fixed-seed-1",
       "is_test_key": true,
       "effective_from": "2024-06-30",
@@ -71,11 +101,11 @@
       "regime_id": "mica_2023",
       "artifact_kind": "RegimePack",
       "signed": true,
-      "artifact_hash_hex": "a0a06ee4cd592d557d42e9f1a0c5177a64a4c080f0677ef73a706542798f66bf",
-      "envelope_len": 598,
-      "ir_schema_version": "0.4.0",
+      "artifact_hash_hex": "72a60976bcd55fc9a9b088cada4aae10cfbb4aabf066a8e85c403dbeae893d94",
+      "envelope_len": 599,
+      "ir_schema_version": "0.5.0",
       "codec_version": "postcard-1",
-      "canonicalization_version": "ke-canon-4",
+      "canonicalization_version": "ke-canon-5",
       "signer_key_id": "test-fixed-seed-1",
       "is_test_key": true,
       "effective_from": "2024-06-30",
