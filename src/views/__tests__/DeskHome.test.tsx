@@ -60,7 +60,7 @@ describe('DeskHome', () => {
     expect(screen.getByTestId('provenance-mica_2023')).toBeInTheDocument();
     // Short form of the GOLDEN hash for rule_reserve_assets (shown in the
     // provenance card and echoed in the teaching line).
-    expect(screen.getAllByText('bcebbd1f8961…').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('13a414cf7f6b…').length).toBeGreaterThan(0);
     // Honestly labeled as a test key (appears per signed artifact).
     expect(screen.getAllByText(/test-key: test-fixed-seed-1/).length).toBeGreaterThan(0);
     // The surfaced-not-verified disclosure.

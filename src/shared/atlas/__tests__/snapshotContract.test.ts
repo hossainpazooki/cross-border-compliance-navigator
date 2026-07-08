@@ -44,8 +44,9 @@ describe('isKnownArtifactKind', () => {
     for (const k of KNOWN_ARTIFACT_KINDS) expect(isKnownArtifactKind(k)).toBe(true);
   });
 
-  it('rejects a not-yet-adopted kind (IntentSpec) and nonsense', () => {
-    expect(isKnownArtifactKind('IntentSpec')).toBe(false);
+  it('rejects a not-yet-adopted kind and nonsense', () => {
+    // IntentSpec is now adopted (ADR-0021); use a still-unadopted future kind.
+    expect(isKnownArtifactKind('FutureKind')).toBe(false);
     expect(isKnownArtifactKind('Nonsense')).toBe(false);
   });
 });
@@ -60,17 +61,17 @@ describe('validateArtifact', () => {
   });
 
   it('flags an unknown artifact kind (the new-ATLAS-kind tripwire)', () => {
-    const v = validateArtifact(signedFixture({ artifact_kind: 'IntentSpec' }), PINNED_ARTIFACTS);
-    expect(v.some((m) => /unknown artifact_kind/i.test(m) && /IntentSpec/.test(m))).toBe(true);
+    const v = validateArtifact(signedFixture({ artifact_kind: 'FutureKind' }), PINNED_ARTIFACTS);
+    expect(v.some((m) => /unknown artifact_kind/i.test(m) && /FutureKind/.test(m))).toBe(true);
   });
 
   it('flags canon-triplet drift on a SIGNED artifact', () => {
-    const v = validateArtifact(signedFixture({ canonicalization_version: 'ke-canon-5' }), PINNED_ARTIFACTS);
+    const v = validateArtifact(signedFixture({ canonicalization_version: 'ke-canon-4' }), PINNED_ARTIFACTS);
     expect(v.some((m) => /canon/i.test(m))).toBe(true);
   });
 
   it('flags canon-triplet drift on an UNSIGNED artifact (old guard skipped these)', () => {
-    const v = validateArtifact(unsignedFixture({ ir_schema_version: '0.5.0' }), PINNED_ARTIFACTS);
+    const v = validateArtifact(unsignedFixture({ ir_schema_version: '0.4.0' }), PINNED_ARTIFACTS);
     expect(v.some((m) => /canon/i.test(m))).toBe(true);
   });
 
@@ -100,7 +101,7 @@ describe('validateSnapshotArtifacts', () => {
 
   it('aggregates violations across artifacts', () => {
     const v = validateSnapshotArtifacts(
-      [signedFixture({ artifact_kind: 'IntentSpec' }), unsignedFixture({ codec_version: 'postcard-2' })],
+      [signedFixture({ artifact_kind: 'FutureKind' }), unsignedFixture({ codec_version: 'postcard-2' })],
       PINNED_ARTIFACTS
     );
     expect(v.length).toBeGreaterThanOrEqual(2);

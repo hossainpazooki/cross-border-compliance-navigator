@@ -14,8 +14,8 @@ import {
 // The two authoritative artifact hashes from ATLAS GOLDEN.md (Gate 4 ledger).
 // If `npm run sync:atlas` ever drifts, these assertions fail loudly.
 const GOLDEN = {
-  rule_reserve_assets: 'bcebbd1f89619efbab253e9fb463fa089b0d487a28064006ec6fd7a43a0ccb87',
-  rule_significant_thresholds: 'a0a06ee4cd592d557d42e9f1a0c5177a64a4c080f0677ef73a706542798f66bf',
+  rule_reserve_assets: '13a414cf7f6b25c6b6049c0953a83ff5697044aabafbd44b87e87fc4ed90f8a9',
+  rule_significant_thresholds: '72a60976bcd55fc9a9b088cada4aae10cfbb4aabf066a8e85c403dbeae893d94',
 };
 
 describe('atlas provenance loader', () => {
@@ -46,7 +46,7 @@ describe('atlas provenance loader', () => {
 
   it('includes the unsigned PolicyBundle, not under mica_2023', () => {
     const all = allProvenance();
-    expect(all).toHaveLength(3);
+    expect(all).toHaveLength(4); // 2 RegimePack + 1 unsigned PolicyBundle + 1 IntentSpec (ADR-0021)
     const policy = all.find((a) => a.artifact_id === 'policy_production_eu');
     expect(policy?.signed).toBe(false);
     expect(policy?.artifact_hash_hex).toBeNull();
@@ -95,11 +95,11 @@ describe('atlas provenance loader', () => {
   });
 
   it('display helpers', () => {
-    expect(shortHash(GOLDEN.rule_reserve_assets)).toBe('bcebbd1f8961…');
+    expect(shortHash(GOLDEN.rule_reserve_assets)).toBe('13a414cf7f6b…');
     expect(shortHash(null)).toBe('—');
     expect(shortCommit('f73b9403c88a7ab5d741b351dce085b6988b6ba7')).toBe('f73b940');
     expect(shortCommit(null)).toBe('—');
     const a = provenanceForRegime('mica_2023')[0];
-    expect(versionTriplet(a)).toBe('ir 0.4.0 · postcard-1 · ke-canon-4');
+    expect(versionTriplet(a)).toBe('ir 0.5.0 · postcard-1 · ke-canon-5');
   });
 });

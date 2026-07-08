@@ -20,6 +20,7 @@ export const KNOWN_ARTIFACT_KINDS = [
   'EquivalenceMatrix',
   'TestCorpus',
   'PolicyBundle',
+  'IntentSpec',
 ] as const;
 
 export type ArtifactKind = (typeof KNOWN_ARTIFACT_KINDS)[number];
@@ -35,14 +36,15 @@ export interface CanonTriplet {
 }
 
 /**
- * The ATLAS canon triplet this consumer is pinned to (ADR 0013: 0.4.0 / postcard-1 /
- * ke-canon-4). A triplet change is a different artifact contract and must force a
+ * The ATLAS canon triplet this consumer is pinned to (ADR-0021: 0.5.0 / postcard-1 /
+ * ke-canon-5 — the breaking bump that introduced the polymorphic `IntentSpec`
+ * payload). A triplet change is a different artifact contract and must force a
  * deliberate re-pin — so every artifact, signed or not, is checked against it.
  */
 export const EXPECTED_CANON: CanonTriplet = {
-  ir_schema_version: '0.4.0',
+  ir_schema_version: '0.5.0',
   codec_version: 'postcard-1',
-  canonicalization_version: 'ke-canon-4',
+  canonicalization_version: 'ke-canon-5',
 };
 
 export interface Pin {
@@ -57,12 +59,18 @@ export interface Pin {
  */
 export const PINNED_ARTIFACTS: Record<string, Pin> = {
   rule_reserve_assets: {
-    hash: 'bcebbd1f89619efbab253e9fb463fa089b0d487a28064006ec6fd7a43a0ccb87',
-    envelopeLen: 862,
+    hash: '13a414cf7f6b25c6b6049c0953a83ff5697044aabafbd44b87e87fc4ed90f8a9',
+    envelopeLen: 863,
   },
   rule_significant_thresholds: {
-    hash: 'a0a06ee4cd592d557d42e9f1a0c5177a64a4c080f0677ef73a706542798f66bf',
-    envelopeLen: 598,
+    hash: '72a60976bcd55fc9a9b088cada4aae10cfbb4aabf066a8e85c403dbeae893d94',
+    envelopeLen: 599,
+  },
+  // ADR-0021: the first IntentSpec artifact — polymorphic ArtifactPayload::IntentSpec
+  // payload, kind-selected attestation set (SourceFidelity + PublicationApproval).
+  intentspec_payment: {
+    hash: 'c7a36959bfaafc03e0abfb86fce7e1c0c6efebc812b55f83313724c3d024dc51',
+    envelopeLen: 422,
   },
 };
 
